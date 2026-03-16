@@ -173,6 +173,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function enterEditMode() {
     document.querySelector(".grid-container").classList.add("edit-mode");
+    setTimeout(() => {
+        console.log('FOCUS!');
+        document.querySelector("#sequenceText").select();
+    }, 1000);
 }
 
 function exitEditMode() {
@@ -241,7 +245,7 @@ function addSequenceFormElements(state, containerEL) {
 }
 
 function addWpmStatsElements(state) {
-    console.log(JSON.stringify(state));
+    // console.log(JSON.stringify(state));
     document.querySelector("#wpm-target-value").innerHTML = state.wpmTarget;
     document.querySelector("#wpm-last-value").innerHTML = state.wpmLast;
     document.querySelector("#wpm-best-value").innerHTML = state.wpmBest;
