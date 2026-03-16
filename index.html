@@ -42,34 +42,34 @@
                     </div>
                     <!-- edit mode: sequence + wpm inputs -->
                     <div class="sequence-edit">
-                        <form name="sequence-form" id="sequence-form">
-                            <div class="d-flex gap-2">
-                                <input
-                                    type="text"
-                                    class="form-control form-control-sm"
-                                    id="sequenceText"
-                                    name="sequenceText"
-                                    placeholder="drill sequence..."
-                                    required
-                                    minlength="3"
-                                    autocomplete="off"
-                                    autocorrect="off"
-                                    autocapitalize="off"
-                                    spellcheck="false"
-                                >
-                                <input
-                                    class="form-control form-control-sm wpm-input"
-                                    id="wpmTarget"
-                                    name="wpmTarget"
-                                    placeholder="wpm"
-                                    inputmode="numeric"
-                                    required
-                                    oninput="this.value = this.value.replace(/\D+/g, '')"
-                                >
-                            </div>
-                        </form>
+                            <form name="sequence-form" id="sequence-form">
+                                <div class="d-flex gap-2">
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        id="sequenceText"
+                                        name="sequenceText"
+                                        placeholder="drill sequence..."
+                                        required
+                                        minlength="3"
+                                        autocomplete="on"
+                                        autocorrect="off"
+                                        autocapitalize="off"
+                                        spellcheck="false"
+                                    >
+                                    <input
+                                        class="form-control form-control-sm wpm-input"
+                                        id="wpmTarget"
+                                        name="wpmTarget"
+                                        placeholder="wpm"
+                                        inputmode="numeric"
+                                        required
+                                        oninput="this.value = this.value.replace(/\D+/g, '')"
+                                    >
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
 
                 <!-- Row 2: typing input -->
                 <div class="drill-row-input">
