@@ -173,10 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function enterEditMode() {
     document.querySelector(".grid-container").classList.add("edit-mode");
-    setTimeout(() => {
-        console.log('FOCUS!');
-        document.querySelector("#sequenceText").select();
-    }, 1000);
+    document.querySelector("#sequenceText").select();
 }
 
 function exitEditMode() {

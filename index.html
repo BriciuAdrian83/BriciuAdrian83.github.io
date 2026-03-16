@@ -11,16 +11,19 @@
 </head>
 
 <body>
-    <h1>Small Sequence typing drill</h1>
     <div class="main-container">
+        <h1>Small Sequence typing drill</h1>
         <div class="grid-container">
 
             <!-- Column 1: Controls -->
             <div class="col-controls">
-                <button class="btn btn-outline-secondary btn-sm w-100" type="button" id="change-sequence-btn">Change</button>
-                <button class="btn btn-outline-secondary btn-sm w-100" type="button" id="try-again-btn">Try again</button>
+                <button class="btn btn-outline-secondary btn-sm w-100" type="button"
+                    id="change-sequence-btn">Change</button>
+                <button class="btn btn-outline-secondary btn-sm w-100" type="button" id="try-again-btn">Try
+                    again</button>
                 <button class="btn btn-outline-danger btn-sm w-100" type="button" id="cancel-btn">Cancel</button>
-                <button class="btn btn-outline-success btn-sm w-100" type="submit" form="sequence-form" id="drillTextChangeBtn">Save</button>
+                <button class="btn btn-outline-success btn-sm w-100" type="submit" form="sequence-form"
+                    id="drillTextChangeBtn">Save</button>
                 <div class="stat-card">
                     <div class="stat-label">target wpm</div>
                     <div class="stat-value" id="wpm-target-value"></div>
@@ -43,48 +46,24 @@
                     </div>
                     <!-- edit mode: sequence + wpm inputs -->
                     <div class="sequence-edit">
-                            <form name="sequence-form" id="sequence-form">
-                                <div class="d-flex gap-2">
-                                    <input
-                                        type="text"
-                                        class="form-control form-control-sm"
-                                        id="sequenceText"
-                                        name="sequenceText"
-                                        placeholder="drill sequence..."
-                                        required
-                                        minlength="3"
-                                        autocomplete="on"
-                                        autocorrect="off"
-                                        autocapitalize="off"
-                                        spellcheck="false"
-                                    >
-                                    <input
-                                        class="form-control form-control-sm wpm-input"
-                                        id="wpmTarget"
-                                        name="wpmTarget"
-                                        placeholder="wpm"
-                                        inputmode="numeric"
-                                        required
-                                        oninput="this.value = this.value.replace(/\D+/g, '')"
-                                    >
-                                </div>
-                            </form>
-                        </div>
+                        <form name="sequence-form" id="sequence-form">
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control form-control-sm" id="sequenceText"
+                                    name="sequenceText" placeholder="drill sequence..." required minlength="3"
+                                    autocomplete="on" autocorrect="off" autocapitalize="off" spellcheck="false">
+                                <input class="form-control form-control-sm wpm-input" id="wpmTarget" name="wpmTarget"
+                                    placeholder="wpm" inputmode="numeric" required
+                                    oninput="this.value = this.value.replace(/\D+/g, '')">
+                            </div>
+                        </form>
                     </div>
+                </div>
 
                 <!-- Row 2: typing input -->
                 <div class="drill-row-input">
                     <form id="typing-form" name="typing-form">
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="typed_text"
-                            name="typed_text"
-                            autocomplete="off"
-                            autocorrect="off"
-                            autocapitalize="off"
-                            spellcheck="false"
-                        >
+                        <input type="text" class="form-control" id="typed_text" name="typed_text" autocomplete="off"
+                            autocorrect="off" autocapitalize="off" spellcheck="false">
                     </form>
                 </div>
 
