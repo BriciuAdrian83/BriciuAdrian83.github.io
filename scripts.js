@@ -103,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector("#typed_text").focus();
     });
 
+
     document.querySelector("#info-btn").addEventListener("click", () => {
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -167,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
     });
+    document.querySelector("#settings-btn").addEventListener("click", showSettingsModal);
 });
 
 // --- Edit mode toggle ---
@@ -193,6 +195,7 @@ function loadFromStorage() {
     if (state.attempts === undefined) state.attempts = 0;
     if (state.slowestWpmCharCount === undefined) state.slowestWpmCharCount = Array(state.drillText.length).fill(0);
     if (state.lastDrillWasClean === undefined) state.lastDrillWasClean = false;
+    if (state.freezeAfterTwoMistakes === undefined) state.freezeAfterTwoMistakes = 0;
     return state;
 }
 
@@ -215,6 +218,7 @@ function buildFreshState(drillText, wpmTarget) {
         lastTypedSequence: "",
         charMistakesTotal: Array(len).fill(0),
         charMistakesLast: Array(len).fill(0),
+        freezeAfterTwoMistakes: 0,
         winStreak: 0,
         lastDrillWasClean: false
     };
@@ -434,6 +438,99 @@ function showCongratulationsModal(message, okLabel) {
     document.body.appendChild(modal);
 }
 
+function showSettingsModal() {
+
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+        position: fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background: rgba(0,0,0,0.5);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        z-index:1000;
+    `;
+
+    const modalContent = document.createElement("div");
+    modalContent.style.cssText = `
+        background:white;
+        padding:28px;
+        border-radius:8px;
+        min-width:320px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+    `;
+
+    const title = document.createElement("h5");
+    title.textContent = "Settings";
+    title.style.marginBottom = "10px";
+    title.style.textAlign = "center";
+
+    const formCheck = document.createElement("div");
+    formCheck.className = "form-check form-switch";
+    formCheck.style.cssText = `
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-top:18px;
+        margin-bottom:18px;
+    `;
+
+    const toggle = document.createElement("input");
+    toggle.className = "form-check-input";
+    toggle.type = "checkbox";
+    toggle.id = "freeze-toggle";
+    toggle.checked = drillState.freezeAfterTwoMistakes === 1;
+    toggle.style.transform = "scale(1.4)";
+    toggle.style.cursor = "pointer";
+
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", "freeze-toggle");
+    label.textContent = "Freeze typing after 2 consecutive mistakes";
+    label.style.margin = "0";
+    label.style.cursor = "pointer";
+
+    formCheck.appendChild(toggle);
+    formCheck.appendChild(label);
+
+    const buttonContainer = document.createElement("div");
+    buttonContainer.style.cssText = `
+        margin-top:20px;
+        display:flex;
+        justify-content:space-between;
+    `;
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "btn btn-secondary";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.onclick = () => modal.remove();
+
+    const okBtn = document.createElement("button");
+    okBtn.className = "btn btn-primary";
+    okBtn.textContent = "Save";
+
+    okBtn.onclick = () => {
+        drillState.freezeAfterTwoMistakes = toggle.checked ? 1 : 0;
+        saveToStorage(drillState);
+        modal.remove();
+    };
+
+    buttonContainer.appendChild(cancelBtn);
+    buttonContainer.appendChild(okBtn);
+
+    modalContent.appendChild(title);
+    modalContent.appendChild(formCheck);
+    modalContent.appendChild(buttonContainer);
+
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
 // --- Typing logic ---
 
 function startTimerOnFirstKey(e) {
@@ -478,7 +575,7 @@ function handleTypingInput(e) {
     }
 
     // 2+ consecutive mistakes — freeze as fail
-    if (consecutiveMistakes >= 2) {
+    if (consecutiveMistakes >= 2 && drillState.freezeAfterTwoMistakes === 1) {
         slowestWpmLast = { index: 0, wpm: Number.POSITIVE_INFINITY };
         drillState.wpmLast = 0;
         drillState.wpmHistory.shift();
