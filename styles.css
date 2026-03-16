@@ -1,0 +1,260 @@
+/* ===========================
+   Reset & Base
+   =========================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* ===========================
+   Layout
+   =========================== */
+.main-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-container {
+  width: 95%;
+  height: 70%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: 1fr 5fr 1fr 1fr;
+  grid-template-rows: auto auto 1fr;
+  gap: 16px;
+  padding: 20px;
+}
+
+/* ===========================
+   Column 1: Controls
+   =========================== */
+.col-controls {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  height: 100%;
+}
+
+.btn-spacer {
+  flex: 1;
+}
+
+/* ===========================
+   Column 2: Drill area
+   =========================== */
+.col-drill {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 67px;
+}
+
+.drill-row-sequence {
+  grid-row: 1;
+}
+
+.drill-row-input {
+  grid-row: 2;
+}
+
+.drill-row-last-typed {
+  background-color: #f5f5f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e0e0da;
+  grid-row: 3;
+  overflow: auto;
+  max-height: 90px;
+}
+
+/* ===========================
+   Column 3: Stats left
+   =========================== */
+.col-stats-left {
+  grid-column: 3;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===========================
+   Column 4: Stats right
+   =========================== */
+.col-stats-right {
+  grid-column: 4;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===========================
+   Stat Cards
+   =========================== */
+.stat-card {
+  background-color: #f5f5f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e0e0da;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #888;
+  font-family: sans-serif;
+  text-transform: lowercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 2px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 500;
+  font-family: "Courier New", Courier, monospace;
+  color: #222;
+}
+
+/* ===========================
+   Sequence display
+   =========================== */
+.sequence-display {
+  width: 100%;
+  background-color: #f5f5f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid #e0e0da;
+}
+
+.sequence-container {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.1rem;
+}
+
+/* ===========================
+   Sequence edit (edit mode)
+   =========================== */
+.sequence-edit {
+  display: none;
+  width: 100%;
+}
+
+.space-char {
+  display: inline-block;
+  width: 1ch;
+  min-width: 1.2ch;
+  text-align: center;
+}
+
+/* ===========================
+   Typing input
+   =========================== */
+#typed_text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1rem;
+  width: 100%;
+  border: 1px solid #ddd;
+  background-color: #fafafa;
+}
+
+#typed_text:focus {
+  border-color: #ccc;
+  box-shadow: none;
+}
+
+/* ===========================
+   Last typed sequence
+   =========================== */
+.drill-row-last-typed .stat-label {
+  margin-bottom: 6px;
+}
+
+#wpm-last-typed-value {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  opacity: 0.5;
+}
+
+/* ===========================
+   Chars (sequence display)
+   =========================== */
+.chars {
+  display: inline-block;
+  text-align: center;
+  vertical-align: bottom;
+  white-space: pre;
+  padding: 0 1px;
+  margin: 0 1px;
+  box-sizing: content-box;
+  border-bottom: 3.2px solid transparent;
+}
+
+.chars.correct {
+  background-color: #cfe8cf;
+}
+
+.chars.incorrect {
+  background-color: #f2dcde;
+}
+
+.chars.current {
+  border-bottom-color: #1565c0;
+}
+
+/* ===========================
+   Frozen input state
+   =========================== */
+.frozen {
+  background-color: #eee;
+  border: 2px solid #999;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ===========================
+   Edit mode toggle
+   =========================== */
+.grid-container.edit-mode .sequence-display {
+  display: none;
+}
+
+.grid-container.edit-mode .sequence-edit {
+  display: block;
+}
+
+.grid-container.edit-mode .drill-row-input {
+  visibility: hidden;
+}
+
+.grid-container.edit-mode #try-again-btn,
+.grid-container.edit-mode #change-sequence-btn {
+  display: none;
+}
+
+.grid-container.edit-mode #drillTextChangeBtn,
+.grid-container.edit-mode #cancel-btn {
+  display: block;
+}
+
+#drillTextChangeBtn,
+#cancel-btn {
+  display: none;
+}
