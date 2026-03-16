@@ -39,7 +39,7 @@ You can test your typing performance, track your WPM, and identify mistakes in r
 - If any mistake occurs, `wpm_last` is recorded as 0.  
 - The current character is highlighted visually.  
 - Typing advances even when a mistake is made.  
-- Two consecutive mistakes freeze the typing box (red border) until Enter is pressed (also try again button will unfreeze.).
+- On the settings there is a option to   freeze the typing box after 2 consecutive mistakes until Enter is pressed (also try again button will unfreeze.).
 
 ## Target WPM
 
