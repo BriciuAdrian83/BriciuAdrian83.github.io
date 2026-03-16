@@ -196,6 +196,7 @@ function loadFromStorage() {
     if (state.slowestWpmCharCount === undefined) state.slowestWpmCharCount = Array(state.drillText.length).fill(0);
     if (state.lastDrillWasClean === undefined) state.lastDrillWasClean = false;
     if (state.freezeAfterTwoMistakes === undefined) state.freezeAfterTwoMistakes = 0;
+    if (state.showSpaceCharOnTopDrill === undefined) state.showSpaceCharOnTopDrill = 0;
     return state;
 }
 
@@ -219,6 +220,7 @@ function buildFreshState(drillText, wpmTarget) {
         charMistakesTotal: Array(len).fill(0),
         charMistakesLast: Array(len).fill(0),
         freezeAfterTwoMistakes: 0,
+        showSpaceCharOnTopDrill: 0,
         winStreak: 0,
         lastDrillWasClean: false
     };
@@ -232,7 +234,7 @@ function addSequenceFormElements(state, containerEL) {
     for (let i = 0; i < arrText.length; i++) {
         const spanEL = document.createElement("span");
         let char = arrText[i];
-        if (char === " ") {
+        if (char === " " && state.showSpaceCharOnTopDrill === 1) {
             char = "\u2423";
             spanEL.classList.add("space-char");
         }
@@ -470,9 +472,10 @@ function showSettingsModal() {
     title.style.marginBottom = "10px";
     title.style.textAlign = "center";
 
-    const formCheck = document.createElement("div");
-    formCheck.className = "form-check form-switch";
-    formCheck.style.cssText = `
+    // First toggle - Freeze after mistakes
+    const formCheck1 = document.createElement("div");
+    formCheck1.className = "form-check form-switch";
+    formCheck1.style.cssText = `
         display:flex;
         align-items:center;
         gap:12px;
@@ -480,23 +483,52 @@ function showSettingsModal() {
         margin-bottom:18px;
     `;
 
-    const toggle = document.createElement("input");
-    toggle.className = "form-check-input";
-    toggle.type = "checkbox";
-    toggle.id = "freeze-toggle";
-    toggle.checked = drillState.freezeAfterTwoMistakes === 1;
-    toggle.style.transform = "scale(1.4)";
-    toggle.style.cursor = "pointer";
+    const freezeToggle = document.createElement("input");
+    freezeToggle.className = "form-check-input";
+    freezeToggle.type = "checkbox";
+    freezeToggle.id = "freeze-toggle";
+    freezeToggle.checked = drillState.freezeAfterTwoMistakes === 1;
+    freezeToggle.style.transform = "scale(1.4)";
+    freezeToggle.style.cursor = "pointer";
 
-    const label = document.createElement("label");
-    label.className = "form-check-label";
-    label.setAttribute("for", "freeze-toggle");
-    label.textContent = "Freeze typing after 2 consecutive mistakes";
-    label.style.margin = "0";
-    label.style.cursor = "pointer";
+    const freezeLabel = document.createElement("label");
+    freezeLabel.className = "form-check-label";
+    freezeLabel.setAttribute("for", "freeze-toggle");
+    freezeLabel.textContent = "Freeze typing after 2 consecutive mistakes";
+    freezeLabel.style.margin = "0";
+    freezeLabel.style.cursor = "pointer";
 
-    formCheck.appendChild(toggle);
-    formCheck.appendChild(label);
+    formCheck1.appendChild(freezeToggle);
+    formCheck1.appendChild(freezeLabel);
+
+    // Second toggle - Show space character
+    const formCheck2 = document.createElement("div");
+    formCheck2.className = "form-check form-switch";
+    formCheck2.style.cssText = `
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-top:18px;
+        margin-bottom:18px;
+    `;
+
+    const spaceToggle = document.createElement("input");
+    spaceToggle.className = "form-check-input";
+    spaceToggle.type = "checkbox";
+    spaceToggle.id = "space-toggle";
+    spaceToggle.checked = drillState.showSpaceCharOnTopDrill === 1; // Fixed this line
+    spaceToggle.style.transform = "scale(1.4)";
+    spaceToggle.style.cursor = "pointer";
+
+    const spaceLabel = document.createElement("label");
+    spaceLabel.className = "form-check-label";
+    spaceLabel.setAttribute("for", "space-toggle");
+    spaceLabel.textContent = "Show \u2423 instead of empty space on top drill";
+    spaceLabel.style.margin = "0";
+    spaceLabel.style.cursor = "pointer";
+
+    formCheck2.appendChild(spaceToggle);
+    formCheck2.appendChild(spaceLabel);
 
     const buttonContainer = document.createElement("div");
     buttonContainer.style.cssText = `
@@ -515,8 +547,10 @@ function showSettingsModal() {
     okBtn.textContent = "Save";
 
     okBtn.onclick = () => {
-        drillState.freezeAfterTwoMistakes = toggle.checked ? 1 : 0;
+        drillState.freezeAfterTwoMistakes = freezeToggle.checked ? 1 : 0;
+        drillState.showSpaceCharOnTopDrill = spaceToggle.checked ? 1 : 0;
         saveToStorage(drillState);
+        addSequenceFormElements(drillState, document.querySelector(".sequence-container"));
         modal.remove();
     };
 
@@ -524,7 +558,8 @@ function showSettingsModal() {
     buttonContainer.appendChild(okBtn);
 
     modalContent.appendChild(title);
-    modalContent.appendChild(formCheck);
+    modalContent.appendChild(formCheck1);
+    modalContent.appendChild(formCheck2);
     modalContent.appendChild(buttonContainer);
 
     modal.appendChild(modalContent);
