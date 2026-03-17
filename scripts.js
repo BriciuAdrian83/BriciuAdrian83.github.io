@@ -675,7 +675,7 @@ function handleTypingInput(e) {
         // console.log('state wpm history length ', drillState.wpmHistory.length);
         if (drillState.winStreak >= 3 && drillState.attempts >= 10 && rate >= 50) {
             setTimeout(() => showCongratulationsModal(
-                `🎉 ${drillState.winStreak} wins in a row and ${rate} success rate on the last 10 attempts. Keep it up!`,
+                `🎉 ${drillState.winStreak} wins in a row and ${rate}% success rate on the last 10 attempts. Keep it up!`,
                 'OK'
             ), 50);
         }
