@@ -672,8 +672,8 @@ function handleTypingInput(e) {
         // Delay modal so the Enter keydown event doesn't instantly dismiss it
         const successCount = state.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
-        console.long('state wpm history length ', state.wpmHistory.length);
-        if (drillState.winStreak >= 3 && state.wpmHistory.length === 10 && rate >= 50) {
+        console.long('state wpm history length ', drillState.wpmHistory.length);
+        if (drillState.winStreak >= 3 && drillState.wpmHistory.length === 10 && rate >= 50) {
             setTimeout(() => showCongratulationsModal(
                 `🎉 ${drillState.winStreak} wins in a row and ${rate} success rate on the last 10 attempts. Keep it up!`,
                 'OK'
