@@ -670,9 +670,11 @@ function handleTypingInput(e) {
         keepCursorAtEnd(e.target);
 
         // Delay modal so the Enter keydown event doesn't instantly dismiss it
-        if (drillState.winStreak > 0 && drillState.winStreak % 3 === 0) {
+        const successCount = state.wpmHistory.filter(w => w > 0).length;
+        const rate = successCount * 10;
+        if (drillState.winStreak > 3 && rate > 70) {
             setTimeout(() => showCongratulationsModal(
-                `🎉 ${drillState.winStreak} wins in a row! Keep it up!`,
+                `🎉 ${drillState.winStreak} wins in a row and ${rate} success rate. Keep it up!`,
                 'OK'
             ), 50);
         }
