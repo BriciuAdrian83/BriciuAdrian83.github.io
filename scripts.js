@@ -274,9 +274,9 @@ function addWpmStatsElements(state) {
         const successCount = state.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
         successRateEl.innerHTML = rate + "%";
-        if (rate >= 70) {
+        if (rate >= 50) {
             successRateEl.style.color = "green";
-        } else if (rate >= 50) {
+        } else if (rate >= 30) {
             successRateEl.style.color = "orange";
         } else {
             successRateEl.style.color = "red";
@@ -672,7 +672,7 @@ function handleTypingInput(e) {
         // Delay modal so the Enter keydown event doesn't instantly dismiss it
         const successCount = state.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
-        if (drillState.winStreak > 3 && rate > 70) {
+        if (drillState.winStreak >= 3 && state.wpmHistory.length === 10 && rate >= 50) {
             setTimeout(() => showCongratulationsModal(
                 `🎉 ${drillState.winStreak} wins in a row and ${rate} success rate. Keep it up!`,
                 'OK'
