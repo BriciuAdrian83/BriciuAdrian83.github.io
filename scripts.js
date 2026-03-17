@@ -670,7 +670,7 @@ function handleTypingInput(e) {
         keepCursorAtEnd(e.target);
 
         // Delay modal so the Enter keydown event doesn't instantly dismiss it
-        const successCount = state.wpmHistory.filter(w => w > 0).length;
+        const successCount = drillState.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
         console.long('state wpm history length ', drillState.wpmHistory.length);
         if (drillState.winStreak >= 3 && drillState.wpmHistory.length === 10 && rate >= 50) {
