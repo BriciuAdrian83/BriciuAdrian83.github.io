@@ -44,7 +44,7 @@ You can test your typing performance, track your WPM, and identify mistakes in r
 ## Target WPM
 
 - Input a target WPM for each drill.  
-- If at least 3 consecutive attempts meet or exceed the target and success rate is above 70%, congratulation indicator is displayed.  
+- If at least 3 consecutive attempts meet or exceed the target and success rate is above 50%, with at least 10 attempts completed, congratulation indicator is displayed.  
 
 ## Installation
 
