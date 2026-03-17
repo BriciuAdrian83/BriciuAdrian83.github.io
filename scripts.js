@@ -327,7 +327,7 @@ function createPreCharSpan() {
     preCharSpan.style.display = "inline-flex";
     preCharSpan.style.flexDirection = "column";
     preCharSpan.style.alignItems = "center";
-    preCharSpan.style.width = "12px";
+    preCharSpan.style.width = "16px";
     preCharSpan.style.flexShrink = "0";
     preCharSpan.style.overflow = "hidden";
     preCharSpan.style.fontWeight = "bold";
@@ -364,7 +364,7 @@ function createCharSpan(state, i) {
     charSpan.style.display = "inline-flex";
     charSpan.style.flexDirection = "column";
     charSpan.style.alignItems = "center";
-    charSpan.style.width = "12px";
+    charSpan.style.width = "16px";
     charSpan.style.flexShrink = "0";
     charSpan.style.overflow = "hidden";
     charSpan.style.fontWeight = "bold";
