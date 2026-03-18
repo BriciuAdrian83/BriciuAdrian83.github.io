@@ -569,7 +569,7 @@ function showSettingsModal() {
 // --- Typing logic ---
 
 function startTimerOnFirstKey(e) {
-    if (startTime === null && e.key !== "Enter") startTime = Date.now();
+    if (startTime === null && e.key !== "Enter" && e.key !== "Shift") startTime = Date.now();
 }
 
 function handleTypingInput(e) {
