@@ -1,4 +1,4 @@
-const LOCAL_STORAGE_KEY = "a+3_sstd_last_drill";
+const LOCAL_STORAGE_DRILL_KEY = "a+3_sstd_last_drill";
 let startTime = null;
 let endTime = null;
 let intermediateEndTime = null;
@@ -8,6 +8,9 @@ let hadMistake = false;
 let drillCompleted = false;
 const drillTextMaxLength = 35;
 let drillState = null;
+
+const LOCAL_STORAGE_WORDS_KEY = "a+3_sstd_words_stats";
+currentDrillWords = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     exitEditMode();
@@ -185,7 +188,7 @@ function exitEditMode() {
 // --- Storage helpers ---
 
 function loadFromStorage() {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const raw = localStorage.getItem(LOCAL_STORAGE_DRILL_KEY);
     if (raw === null) {
         return buildFreshState("sample text sequence, ", 60);
     }
@@ -201,7 +204,7 @@ function loadFromStorage() {
 }
 
 function saveToStorage(state) {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(LOCAL_STORAGE_DRILL_KEY, JSON.stringify(state));
 }
 
 function buildFreshState(drillText, wpmTarget) {

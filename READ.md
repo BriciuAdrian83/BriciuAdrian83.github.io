@@ -3,7 +3,7 @@
 ![App Screenshot](image/small_sequence_typing_drill/1773083365440.png)
 
 ## Description
-**SSTD** is a lightweight, browser-based web app to help you practice typing speed and accuracy. It uses **local storage** to save a single short typing sequence (max 30 characters), making it fast, private, and easy to use.  
+**SSTD** is a lightweight, browser-based web app to help you practice typing speed and accuracy. It uses **local storage** to save a single short typing sequence (max 35 characters), making it fast, private, and easy to use.  
 
 You can test your typing performance, track your WPM, and identify mistakes in real time, without any server or external data collection.
 
