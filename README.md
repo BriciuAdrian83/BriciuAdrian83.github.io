@@ -77,3 +77,58 @@ You can test your typing performance, track your WPM, and identify mistakes in r
 This project is open-source and free to use.  
 
 For feedback, suggestions, or development inquiries, contact: **sstd_dev_contact@gmail.com**
+
+
+# Word stats analysis development
+## Current drill data (one sequence)
+```JS
+{
+  "driLLtEXT":" citizens own responsibilities ",
+  "wpmTarget":75,
+  "wpmLast":67,
+  "wpmBest":78,
+  "slowestWpmCharCount":[0,2,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,4,0,6,6,0,0,1],
+  "slowestCharLastIndex":18,
+  "slowestWpmBest":37,
+  "attempts":54,
+  "wpmHistory":[0,74,0,0,59,0,0,69,69,67],
+  "lastTypedSequence":" citizens own responsibilities ",
+  "charMistakesTotal":[0,0,0,0,0,2,0,1,1,1,1,2,3,2,0,0,1,0,7,2,2,1,2,2,2,0,1,6,4,2,2],
+  "charMistakesLast":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  "freezeAfterTwoMistakes":0,
+  "showSpaceCharOnTopDrill":0,
+  "winStreak":0,
+  "lastDrillWasClean":true
+}
+```
+## Data that will be calculated for words stats
+
+```JS
+{
+  "word": "responsibilities",
+  "accuracy": {
+    "score": 0.0416,
+    "worstIndexes": [5, 12] // The specific characters with the MAX mistakes
+  },
+  "speed": {
+    "score": 0.0219,
+    "worstIndexes": [18]    // The specific character with the MAX slow count
+  }
+}
+``` 
+
+## Calculation of scores 
+
+Calculation only starts when attempts > 10
+
+
+1. The Accuracy Score (Mistake Density)This formula calculates the probability of making a mistake on any given character within that specific word.$$\text{Accuracy Score} = \frac{\sum \text{Mistakes in Word}}{\text{Word Length} \times \text{Total Drills}}$$
+
+
+2. The Speed Score (Hesitation Density)This uses your slowestWpmCharCount to find where your rhythm breaks, even if you didn't actually press the wrong key.$$\text{Speed Score} = \frac{\sum \text{Slow Counts in Word}}{\text{Word Length} \times \text{Total Drills}}$$
+
+## User Interface result presentation
+In a modal 2 categories of top wors wors words will be shown:
+- top 4 words with worst accuracy
+- top 4 words with worst typing speed
+A word could be in both categorie, high score is a bad result, that is words with the highest scores will compose the top 4.
