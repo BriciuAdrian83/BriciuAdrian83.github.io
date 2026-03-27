@@ -605,11 +605,11 @@ function handleTypingInput(e) {
             wordStart = true;
             possibleWord = {
                 charsSequence: [typedText[lastTypedIndex]],
-                indexsSequnce: [lastTypedIndex]
+                indexsSequence: [lastTypedIndex]
             };
         } else {
             possibleWord.charsSequence.push(typedText[lastTypedIndex]);
-            possibleWord.indexsSequnce.push(lastTypedIndex);
+            possibleWord.indexsSequence.push(lastTypedIndex);
         }
     }
 
@@ -617,8 +617,8 @@ function handleTypingInput(e) {
     if (wordStart && (drillState.drillText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
         // Log exactly what word the system is about to process
         console.log(`Trigger update accuracy stat update`);
-        console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
-        
+        console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequence[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
+        console.log(JSON.stringify(possibleWord));
         // updateGlobalAccuracyStats(possibleWord);
 
         currentDrillWords.push({ ...possibleWord });
@@ -702,8 +702,8 @@ function handleTypingInput(e) {
         }
 
         // --- CLEAN FINISH (SUCCESS) ---
-        console.log(`Trigger speed stats update`);
-        console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
+        // console.log(`Trigger speed stats update`);
+        // console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
         
         // currentDrillWords.forEach(word => {
         //     updateGlobalSpeedStats(word);
