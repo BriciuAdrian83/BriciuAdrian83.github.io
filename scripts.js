@@ -581,43 +581,38 @@ function handleTypingInput(e) {
     const typedText = e.target.value;
     const typeTextLength = typedText.length;
     if (typeTextLength === 0) return;
-    const lastTypedIndex = typeTextLength - 1;
     
-
-    /* CHEKC IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
-    // 1. START of a word (First character)
-    if (!wordStart && typedText[lastTypedIndex] !== ' ') {
+    const lastTypedIndex = typeTextLength - 1;
+    const currentChar = typedText[lastTypedIndex];
+    const isLastCharOfDrill = typeTextLength === drillState.drillText.length;
+    
+    /* CHECK IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
+    // 1. START: If not in a word and char is NOT a space
+    if (!wordStart && currentChar !== ' ') {
         wordStart = true;
         possibleWord = {
-            charsSequence: [typedText[lastTypedIndex]],
+            charsSequence: [currentChar],
             indexsSequnce: [lastTypedIndex]
         };
     } 
-    // 2. MIDDLE of a word (Not a space, and word already started)
-    else if (wordStart && typedText[lastTypedIndex] !== ' ') {
-        possibleWord.charsSequence.push(typedText[lastTypedIndex]);
+    // 2. CONTINUE: In a word and char is NOT a space
+    else if (wordStart && currentChar !== ' ') {
+        possibleWord.charsSequence.push(currentChar);
         possibleWord.indexsSequnce.push(lastTypedIndex);
     }
 
-    // 3. END of a word (Space detected OR end of the whole drill string)
-    const isEndOfDrill = typeTextLength === drillState.drillText.length;
-    if (wordStart && (typedText[lastTypedIndex] === ' ' || isEndOfDrill)) {
+    // 3. END: Close word ONLY on space OR end of drill
+    if (wordStart && (currentChar === ' ' || isLastCharOfDrill)) {
+        // If it ended on a space, don't include the space in the word text
+        // but keep the word tracking active until this point
+        currentDrillWords.push({...possibleWord}); 
         wordStart = false;
-        currentDrillWords.push(possibleWord);
-        possibleWord = {}; // Reset for the next word
-    }    
-    if (!wordStart && typedText[lastTypedIndex] !== ' ') {
-        wordStart = true;
-        possibleWord.charsSequence = [];
-        possibleWord.indexsSequnce = [];
-        possibleWord.charsSequence.push(typedText[lastTypedIndex]);
-        possibleWord.indexsSequnce.push(lastTypedIndex);
-    } else if (wordStart && typedText[lastTypedIndex] === ' ' && possibleWord.charsSequence.length > 0) {
-        wordStart = false;
-        currentDrillWords.push(possibleWord);
+        possibleWord = {}; 
+        
+        console.log("SUCCESSFULLY CAPTURED:", currentDrillWords[currentDrillWords.length-1].charsSequence.join(""));
     }
 
-    console.log(`Current Char: ${typedText[lastTypedIndex]} | WordStart: ${wordStart}`);
+    console.log(`Current Char: ${currentChar} | WordStart: ${wordStart}`);
     if (!wordStart && currentDrillWords.length > 0) {
         const lastWord = currentDrillWords[currentDrillWords.length - 1];
         console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
