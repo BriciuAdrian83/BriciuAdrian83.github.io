@@ -583,55 +583,47 @@ function showSettingsModal() {
 
 // --- Typing logic ---
 
-function startTimerOnFirstKey(e) {
-    if (startTime === null && e.key !== "Enter" && e.key !== "Shift") startTime = Date.now();
-}
-
 function handleTypingInput(e) {
     const typedText = e.target.value;
     const typeTextLength = typedText.length;
     if (typeTextLength === 0) return;
-    
+
     const lastTypedIndex = typeTextLength - 1;
     const isLastCharOfDrill = typeTextLength === drillState.drillText.length;
-    
-    /* CHECK IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
-    // 1. START: If not in a word and char is NOT a space
+
+    /* 1. WORD CAPTURE & ACCURACY TRIGGER */
+    // START: If not in a word and char is NOT a space
     if (!wordStart && typedText[lastTypedIndex] !== ' ') {
         wordStart = true;
         possibleWord = {
             charsSequence: [typedText[lastTypedIndex]],
             indexsSequnce: [lastTypedIndex]
         };
-    } 
-    // 2. CONTINUE: In a word and char is NOT a space
+    }
+    // CONTINUE: In a word and char is NOT a space
     else if (wordStart && typedText[lastTypedIndex] !== ' ') {
         possibleWord.charsSequence.push(typedText[lastTypedIndex]);
         possibleWord.indexsSequnce.push(lastTypedIndex);
     }
 
-    // 3. END: Close word ONLY on space OR end of drill
+    // END WORD: Close word on space OR end of drill
     if (wordStart && (typedText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
-        // If it ended on a space, don't include the space in the word text
-        // but keep the word tracking active until this point
-        currentDrillWords.push({...possibleWord}); 
+        // BANK ACCURACY IMMEDIATELY (even if drill fails later)
+        console.log(`Trigger update accuracy stat update`);
+        // updateGlobalAccuracyStats(possibleWord);
+
+        currentDrillWords.push({ ...possibleWord });
         wordStart = false;
-        possibleWord = {}; 
-        
+        possibleWord = {};
     }
 
-    console.log(`Current Char: ${typedText[lastTypedIndex]} | WordStart: ${wordStart}`);
-    if (!wordStart && currentDrillWords.length > 0) {
-        const lastWord = currentDrillWords[currentDrillWords.length - 1];
-        console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
-    }
-    
-
+    /* 2. VISUAL FEEDBACK & RAW DATA RECORDING */
     const currentSpan = document.getElementById(`char-${lastTypedIndex}`);
     const nextSpan = document.getElementById(`char-${lastTypedIndex + 1}`);
     if (currentSpan) currentSpan.classList.remove('current');
     if (nextSpan) nextSpan.classList.add('current');
 
+    // Check if character is correct
     if (typedText[lastTypedIndex] === drillState.drillText[lastTypedIndex]) {
         currentSpan.classList.add('correct');
         currentSpan.classList.remove('incorrect');
@@ -639,6 +631,7 @@ function handleTypingInput(e) {
         consecutiveMistakes = 0;
         endTime = Date.now();
 
+        // Calculate WPM for slowness tracking
         if (lastTypedIndex === 0) {
             intermediateEndTime = endTime;
         } else {
@@ -650,15 +643,17 @@ function handleTypingInput(e) {
             intermediateEndTime = endTime;
         }
     } else {
+        // Character is incorrect
         currentSpan.classList.add('incorrect');
         currentSpan.classList.remove('correct');
         drillState.charMistakesLast[lastTypedIndex] = 1;
-        drillState.charMistakesTotal[lastTypedIndex] += 1;
+        drillState.charMistakesTotal[lastTypedIndex] += 1; // Increment total mistakes for accuracy logic
+
         consecutiveMistakes += 1;
         hadMistake = true;
     }
 
-    // 2+ consecutive mistakes — possibility of freezing if fail
+    /* 3. FAILURE LOGIC (Freezing) */
     if (consecutiveMistakes >= 2 && drillState.freezeAfterTwoMistakes === 1) {
         slowestWpmLast = { index: 0, wpm: Number.POSITIVE_INFINITY };
         drillState.wpmLast = 0;
@@ -669,6 +664,7 @@ function handleTypingInput(e) {
         drillState.lastTypedSequence = typedText;
         drillState.lastDrillWasClean = false;
         saveToStorage(drillState);
+
         e.target.readOnly = true;
         e.target.classList.add('frozen');
         addWpmStatsElements(drillState);
@@ -676,6 +672,7 @@ function handleTypingInput(e) {
         return;
     }
 
+    /* 4. END OF DRILL LOGIC */
     if (typeTextLength === drillState.drillText.length) {
         // reached end with any mistake — freeze as fail
         if (hadMistake) {
@@ -688,6 +685,7 @@ function handleTypingInput(e) {
             drillState.lastTypedSequence = typedText;
             drillState.lastDrillWasClean = false;
             saveToStorage(drillState);
+
             e.target.readOnly = true;
             e.target.classList.add('frozen');
             addWpmStatsElements(drillState);
@@ -695,7 +693,15 @@ function handleTypingInput(e) {
             return;
         }
 
-        // clean finish — freeze with wpm
+        // --- CLEAN FINISH (SUCCESS) ---
+
+        // TRIGGER SPEED STATS: Loop through all captured words since run was clean
+        console.log(`Trigger speed stats update`);
+        // currentDrillWords.forEach(word => {
+        //     updateGlobalSpeedStats(word);
+        // });
+
+        // Record the slowest character for visual display
         drillState.slowestWpmCharCount[slowestWpmLast.index] += 1;
         if (slowestWpmLast.wpm > drillState.slowestWpmBest) {
             drillState.slowestWpmBest = slowestWpmLast.wpm;
@@ -706,30 +712,30 @@ function handleTypingInput(e) {
         drillState.wpmHistory.shift();
         drillState.wpmHistory.push(wpm);
         drillState.lastTypedSequence = typedText;
+
         if (wpm > drillState.wpmBest) drillState.wpmBest = wpm;
         drillState.winStreak = wpm >= drillState.wpmTarget ? drillState.winStreak + 1 : 0;
         drillState.attempts += 1;
         drillState.lastDrillWasClean = true;
         drillState.slowestCharLastIndex = slowestWpmLast.index;
+
         saveToStorage(drillState);
         drillCompleted = true;
+
         e.target.readOnly = true;
         e.target.classList.add('frozen');
         addWpmStatsElements(drillState);
         keepCursorAtEnd(e.target);
 
-        // Delay modal so the Enter keydown event doesn't instantly dismiss it
+        // Success Modal Check
         const successCount = drillState.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
-        // console.log('state wpm history length ', drillState.wpmHistory.length);
         if (drillState.winStreak >= 3 && drillState.attempts >= 10 && rate >= 50) {
             setTimeout(() => showCongratulationsModal(
                 `🎉 ${drillState.winStreak} wins in a row and ${rate}% success rate on the last 10 attempts. Keep it up!`,
                 'OK'
             ), 50);
         }
-
-        return;
     }
 }
 
