@@ -622,7 +622,7 @@ function handleTypingInput(e) {
 
         currentDrillWords.push({ ...possibleWord });
         wordStart = false;
-        possibleWord = {};git
+        possibleWord = {};
     }
 
     /* 2. VISUAL FEEDBACK & RAW DATA RECORDING */
