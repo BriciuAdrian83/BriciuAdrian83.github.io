@@ -10,7 +10,10 @@ const drillTextMaxLength = 35;
 let drillState = null;
 
 const LOCAL_STORAGE_WORDS_KEY = "a+3_sstd_words_stats";
-currentDrillWords = [];
+let currentDrillWords = [];
+let possibleWord = [];
+let wordStart = false;
+let wordEnd = false
 
 document.addEventListener("DOMContentLoaded", () => {
     exitEditMode();
@@ -612,7 +615,7 @@ function handleTypingInput(e) {
         hadMistake = true;
     }
 
-    // 2+ consecutive mistakes — freeze as fail
+    // 2+ consecutive mistakes — possibility of freezing if fail
     if (consecutiveMistakes >= 2 && drillState.freezeAfterTwoMistakes === 1) {
         slowestWpmLast = { index: 0, wpm: Number.POSITIVE_INFINITY };
         drillState.wpmLast = 0;
