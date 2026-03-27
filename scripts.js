@@ -180,6 +180,92 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(modal);
     });
     document.querySelector("#settings-btn").addEventListener("click", showSettingsModal);
+
+    document.querySelector("#stats-btn").addEventListener("click", () => {
+        const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+        const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
+
+        const hasEnoughData = stats.accuracyQueue.length >= 5 && stats.speedQueue.length >= 5;
+
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+        position: fixed; top:0; left:0; width:100%; height:100%;
+        background: rgba(0,0,0,0.6); z-index:1000;
+        display:flex; align-items:center; justify-content:center;
+    `;
+
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+        background: white; padding: 25px; border-radius: 12px;
+        width: 90%; max-width: 500px; text-align: center;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        font-family: sans-serif;
+    `;
+
+        if (!hasEnoughData) {
+            modalContent.innerHTML = `
+            <h3 style="color: #666;">Analysis in Progress</h3>
+            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
+                We need a few more samples to identify your patterns accurately.<br><br>
+                <b>Goal:</b> 5 words in each queue.<br>
+                <b>Current:</b> ${stats.accuracyQueue.length} Accuracy / ${stats.speedQueue.length} Speed
+            </p>
+        `;
+        } else {
+            const highlightWord = (wordStr, indices) => {
+                return wordStr.split('').map((char, idx) => {
+                    return indices.includes(idx)
+                        ? `<span style="color: #d9534f; font-weight: bold; border-bottom: 2px solid #d9534f;">${char}</span>`
+                        : char;
+                }).join('');
+            };
+
+            const topAccuracy = [...stats.accuracyQueue].sort((a, b) => b.score - a.score).slice(0, 4);
+            const topSpeed = [...stats.speedQueue].sort((a, b) => b.score - a.score).slice(0, 4);
+
+            let html = `<h2 style="margin-top:0; color: #333; font-size: 1.4rem;">Practice Insights</h2>`;
+
+            // Accuracy Section
+            html += `<div style="text-align: left; margin-bottom: 24px;">
+                    <h4 style="border-bottom: 2px solid #d9534f; padding-bottom: 5px; color: #d9534f; font-size: 1rem;">Accuracy Hotspots</h4>
+                    <ul style="list-style: none; padding: 0; margin-top: 10px;">`;
+            topAccuracy.forEach(item => {
+                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>${highlightWord(item.word, item.worstIndexes)}</span>
+                        <span style="color: #bbb; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
+                    </li>`;
+            });
+            html += `</ul></div>`;
+
+            // Speed Section
+            html += `<div style="text-align: left;">
+                    <h4 style="border-bottom: 2px solid #f0ad4e; padding-bottom: 5px; color: #f0ad4e; font-size: 1rem;">Speed Bottlenecks</h4>
+                    <ul style="list-style: none; padding: 0; margin-top: 10px;">`;
+            topSpeed.forEach(item => {
+                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>${highlightWord(item.word, item.slowestIndexes)}</span>
+                        <span style="color: #bbb; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
+                    </li>`;
+            });
+            html += `</ul></div>`;
+
+            modalContent.innerHTML = html;
+        }
+
+        const okButton = document.createElement("button");
+        okButton.textContent = "Back to Practice";
+        okButton.style.cssText = `
+        margin-top: 25px; padding: 10px 30px; border:none; border-radius:6px;
+        background:#444; color:white; cursor:pointer; font-weight: bold; transition: background 0.2s;
+    `;
+        okButton.onmouseover = () => okButton.style.background = "#222";
+        okButton.onmouseout = () => okButton.style.background = "#444";
+        okButton.onclick = () => modal.remove();
+        modalContent.appendChild(okButton);
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+    });
 });
 
 // --- Edit mode toggle ---
@@ -835,7 +921,7 @@ function getTotalMistakesAndMax() {
 
 function updateGlobalSpeedStats(word) {
     if (drillState.attempts < 10) return;
-    
+
     // console.log(`Word is: "${word.charsSequence.join('')}"`);
 
     // 1. Calculate Total Slows and Max Slows for this word range
