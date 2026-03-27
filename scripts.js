@@ -581,6 +581,13 @@ function showSettingsModal() {
     document.body.appendChild(modal);
 }
 
+
+function startTimerOnFirstKey(e) {
+    if (startTime === null && e.key !== "Enter" && e.key !== "Shift") startTime = Date.now();
+}
+
+
+
 // --- Typing logic ---
 
 function handleTypingInput(e) {
@@ -615,7 +622,7 @@ function handleTypingInput(e) {
 
         currentDrillWords.push({ ...possibleWord });
         wordStart = false;
-        possibleWord = {};
+        possibleWord = {};git
     }
 
     /* 2. VISUAL FEEDBACK & RAW DATA RECORDING */
