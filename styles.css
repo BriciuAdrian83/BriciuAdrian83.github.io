@@ -31,7 +31,7 @@ body {
   max-width: 1200px;
   display: grid;
   grid-template-columns: 1fr 6fr 1fr 1fr;
-  grid-template-rows: auto auto 2fr;
+  grid-template-rows: auto auto auto;
   gap: 16px;
   padding: 20px;
 }
