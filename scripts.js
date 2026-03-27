@@ -582,6 +582,8 @@ function handleTypingInput(e) {
     const typeTextLength = typedText.length;
     if (typeTextLength === 0) return;
     const lastTypedIndex = typeTextLength - 1;
+    
+    console.log(`I'm here what's up`);
 
     /* CHEKC IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
     // 1. START of a word (First character)
