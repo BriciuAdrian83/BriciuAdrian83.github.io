@@ -206,16 +206,16 @@ document.addEventListener("DOMContentLoaded", () => {
             modalContent.innerHTML = `
             <h3 style="color: #666;">Analysis in Progress</h3>
             <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
-                We need a few more samples to identify your patterns accurately.<br><br>
-                <b>Goal:</b> 5 words in each queue.<br>
-                <b>Current:</b> ${stats.accuracyQueue.length} Accuracy / ${stats.speedQueue.length} Speed
+                Practice more to see your hotspots.<br>
+                (Current: ${stats.accuracyQueue.length} Acc / ${stats.speedQueue.length} Spd)
             </p>
         `;
         } else {
-            const highlightWord = (wordStr, indices) => {
+            // Highlight Helper
+            const highlightWord = (wordStr, indices, color) => {
                 return wordStr.split('').map((char, idx) => {
                     return indices.includes(idx)
-                        ? `<span style="color: #d9534f; font-weight: bold; border-bottom: 2px solid #d9534f;">${char}</span>`
+                        ? `<span style="color: ${color}; font-weight: bold; border-bottom: 2px solid ${color};">${char}</span>`
                         : char;
                 }).join('');
             };
@@ -223,28 +223,31 @@ document.addEventListener("DOMContentLoaded", () => {
             const topAccuracy = [...stats.accuracyQueue].sort((a, b) => b.score - a.score).slice(0, 4);
             const topSpeed = [...stats.speedQueue].sort((a, b) => b.score - a.score).slice(0, 4);
 
-            let html = `<h2 style="margin-top:0; color: #333; font-size: 1.4rem;">Practice Insights</h2>`;
+            let html = `<h2 style="margin-top:0; color: #333; font-size: 1.4rem;">Practice Insights</h2>
+                    <p style="font-size: 0.8rem; color: #777; margin-bottom: 20px;">
+                        Red: High Mistakes | Orange: Slowest Hesitations
+                    </p>`;
 
-            // Accuracy Section
+            // Accuracy Section (Red)
             html += `<div style="text-align: left; margin-bottom: 24px;">
-                    <h4 style="border-bottom: 2px solid #d9534f; padding-bottom: 5px; color: #d9534f; font-size: 1rem;">Accuracy Hotspots</h4>
-                    <ul style="list-style: none; padding: 0; margin-top: 10px;">`;
+                    <h4 style="color: #d9534f; font-size: 1rem; margin-bottom: 10px;">Accuracy Hotspots</h4>
+                    <ul style="list-style: none; padding: 0;">`;
             topAccuracy.forEach(item => {
-                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span>${highlightWord(item.word, item.worstIndexes)}</span>
-                        <span style="color: #bbb; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
+                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                        <span>${highlightWord(item.word, item.worstIndexes, '#d9534f')}</span>
+                        <span style="color: #ccc; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
                     </li>`;
             });
             html += `</ul></div>`;
 
-            // Speed Section
+            // Speed Section (Darker Orange)
             html += `<div style="text-align: left;">
-                    <h4 style="border-bottom: 2px solid #f0ad4e; padding-bottom: 5px; color: #f0ad4e; font-size: 1rem;">Speed Bottlenecks</h4>
-                    <ul style="list-style: none; padding: 0; margin-top: 10px;">`;
+                    <h4 style="color: #e67e22; font-size: 1rem; margin-bottom: 10px;">Speed Bottlenecks</h4>
+                    <ul style="list-style: none; padding: 0;">`;
             topSpeed.forEach(item => {
-                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span>${highlightWord(item.word, item.slowestIndexes)}</span>
-                        <span style="color: #bbb; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
+                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                        <span>${highlightWord(item.word, item.slowestIndexes, '#e67e22')}</span>
+                        <span style="color: #ccc; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
                     </li>`;
             });
             html += `</ul></div>`;
@@ -256,10 +259,8 @@ document.addEventListener("DOMContentLoaded", () => {
         okButton.textContent = "Back to Practice";
         okButton.style.cssText = `
         margin-top: 25px; padding: 10px 30px; border:none; border-radius:6px;
-        background:#444; color:white; cursor:pointer; font-weight: bold; transition: background 0.2s;
+        background:#444; color:white; cursor:pointer; font-weight: bold;
     `;
-        okButton.onmouseover = () => okButton.style.background = "#222";
-        okButton.onmouseout = () => okButton.style.background = "#444";
         okButton.onclick = () => modal.remove();
         modalContent.appendChild(okButton);
 
