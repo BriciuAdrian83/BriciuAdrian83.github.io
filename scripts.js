@@ -599,8 +599,8 @@ function handleTypingInput(e) {
     const isLastCharOfDrill = typeTextLength === drillState.drillText.length;
 
     /* 1. WORD CAPTURE & ACCURACY TRIGGER */
-    // START/CONTINUE: Collect characters if not a space
-    if (typedText[lastTypedIndex] !== ' ') {
+    // Check if the DRILL TEXT (not what was typed) is a space
+    if (drillState.drillText[lastTypedIndex] !== ' ') {
         if (!wordStart) {
             wordStart = true;
             possibleWord = {
@@ -613,11 +613,12 @@ function handleTypingInput(e) {
         }
     }
 
-    // END WORD: Close word on literal space OR end of drill
-    if (wordStart && (typedText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
-        // BANK ACCURACY (Captured even on failed runs)
+    // END WORD: Trigger only if the DRILL position is a space OR end of drill
+    if (wordStart && (drillState.drillText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
+        // Log exactly what word the system is about to process
         console.log(`Trigger update accuracy stat update`);
-        console.log("Accuracy Update for:", typedText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + 1).trim());
+        console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
+        
         // updateGlobalAccuracyStats(possibleWord);
 
         currentDrillWords.push({ ...possibleWord });
@@ -683,7 +684,6 @@ function handleTypingInput(e) {
     /* 4. END OF DRILL LOGIC */
     if (typeTextLength === drillState.drillText.length) {
         if (hadMistake) {
-            // Reached end but with mistakes
             drillState.wpmLast = 0;
             slowestWpmLast = { index: 0, wpm: Number.POSITIVE_INFINITY };
             drillState.wpmHistory.shift();
@@ -702,15 +702,13 @@ function handleTypingInput(e) {
         }
 
         // --- CLEAN FINISH (SUCCESS) ---
-
-        // TRIGGER SPEED STATS: Process words from the current run
-        console.log(`Trigger update accuracy stat update`);
-        console.log("Accuracy Update for:", typedText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + 1).trim());
+        console.log(`Trigger speed stats update`);
+        console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
+        
         // currentDrillWords.forEach(word => {
         //     updateGlobalSpeedStats(word);
         // });
 
-        // Record the slowest character for visual display
         drillState.slowestWpmCharCount[slowestWpmLast.index] += 1;
         if (slowestWpmLast.wpm > drillState.slowestWpmBest) {
             drillState.slowestWpmBest = slowestWpmLast.wpm;
