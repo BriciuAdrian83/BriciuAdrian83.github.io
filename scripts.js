@@ -599,23 +599,23 @@ function handleTypingInput(e) {
     const isLastCharOfDrill = typeTextLength === drillState.drillText.length;
 
     /* 1. WORD CAPTURE & ACCURACY TRIGGER */
-    // START: If not in a word and char is NOT a space
-    if (!wordStart && typedText[lastTypedIndex] !== ' ') {
-        wordStart = true;
-        possibleWord = {
-            charsSequence: [typedText[lastTypedIndex]],
-            indexsSequnce: [lastTypedIndex]
-        };
-    }
-    // CONTINUE: In a word and char is NOT a space
-    else if (wordStart && typedText[lastTypedIndex] !== ' ') {
-        possibleWord.charsSequence.push(typedText[lastTypedIndex]);
-        possibleWord.indexsSequnce.push(lastTypedIndex);
+    // START/CONTINUE: Collect characters if not a space
+    if (typedText[lastTypedIndex] !== ' ') {
+        if (!wordStart) {
+            wordStart = true;
+            possibleWord = {
+                charsSequence: [typedText[lastTypedIndex]],
+                indexsSequnce: [lastTypedIndex]
+            };
+        } else {
+            possibleWord.charsSequence.push(typedText[lastTypedIndex]);
+            possibleWord.indexsSequnce.push(lastTypedIndex);
+        }
     }
 
-    // END WORD: Close word on space OR end of drill
+    // END WORD: Close word on literal space OR end of drill
     if (wordStart && (typedText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
-        // BANK ACCURACY IMMEDIATELY (even if drill fails later)
+        // BANK ACCURACY (Captured even on failed runs)
         console.log(`Trigger update accuracy stat update`);
         console.log("Accuracy Update for:", typedText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + 1).trim());
         // updateGlobalAccuracyStats(possibleWord);
@@ -655,7 +655,7 @@ function handleTypingInput(e) {
         currentSpan.classList.add('incorrect');
         currentSpan.classList.remove('correct');
         drillState.charMistakesLast[lastTypedIndex] = 1;
-        drillState.charMistakesTotal[lastTypedIndex] += 1; // Increment total mistakes for accuracy logic
+        drillState.charMistakesTotal[lastTypedIndex] += 1;
 
         consecutiveMistakes += 1;
         hadMistake = true;
@@ -682,8 +682,8 @@ function handleTypingInput(e) {
 
     /* 4. END OF DRILL LOGIC */
     if (typeTextLength === drillState.drillText.length) {
-        // reached end with any mistake — freeze as fail
         if (hadMistake) {
+            // Reached end but with mistakes
             drillState.wpmLast = 0;
             slowestWpmLast = { index: 0, wpm: Number.POSITIVE_INFINITY };
             drillState.wpmHistory.shift();
@@ -703,9 +703,9 @@ function handleTypingInput(e) {
 
         // --- CLEAN FINISH (SUCCESS) ---
 
-        // TRIGGER SPEED STATS: Loop through all captured words since run was clean
-        console.log(`Trigger speed stats update`);
-        console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
+        // TRIGGER SPEED STATS: Process words from the current run
+        console.log(`Trigger update accuracy stat update`);
+        console.log("Accuracy Update for:", typedText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + 1).trim());
         // currentDrillWords.forEach(word => {
         //     updateGlobalSpeedStats(word);
         // });
