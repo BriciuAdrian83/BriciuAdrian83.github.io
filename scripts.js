@@ -857,7 +857,7 @@ function updateGlobalSpeedStats(word) {
         }
     });
 
-    console.log(`Slow indexes: ${JSON.stringify.slowestIdxs}`);
+    console.log(`Slow indexes: ${JSON.stringify(slowestIdxs)}`);
 
     // 4. Load & Update Data
     const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
