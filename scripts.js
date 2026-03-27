@@ -610,6 +610,7 @@ function handleTypingInput(e) {
     if (wordStart && (typedText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
         // BANK ACCURACY IMMEDIATELY (even if drill fails later)
         console.log(`Trigger update accuracy stat update`);
+        console.log("Accuracy Update for:", typedText.substring(possibleWord.indexsSequnce[0], lastTypedIndex + 1).trim());
         // updateGlobalAccuracyStats(possibleWord);
 
         currentDrillWords.push({ ...possibleWord });
@@ -697,6 +698,7 @@ function handleTypingInput(e) {
 
         // TRIGGER SPEED STATS: Loop through all captured words since run was clean
         console.log(`Trigger speed stats update`);
+        console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
         // currentDrillWords.forEach(word => {
         //     updateGlobalSpeedStats(word);
         // });
