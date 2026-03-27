@@ -616,9 +616,9 @@ function handleTypingInput(e) {
     // END WORD: Trigger only if the DRILL position is a space OR end of drill
     if (wordStart && (drillState.drillText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
         // Log exactly what word the system is about to process
-        console.log(`Trigger update accuracy stat update`);
-        console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequence[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
-        console.log(JSON.stringify(possibleWord));
+        // console.log(`Trigger update accuracy stat update`);
+        // console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequence[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
+        // console.log(JSON.stringify(possibleWord));
         updateGlobalAccuracyStats();
 
         currentDrillWords.push({ ...possibleWord });
@@ -702,17 +702,17 @@ function handleTypingInput(e) {
         }
 
         // --- CLEAN FINISH (SUCCESS) ---
-        // console.log(`Trigger speed stats update`);
-        // console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
-
-        // currentDrillWords.forEach(word => {
-        //     updateGlobalSpeedStats(word);
-        // });
-
         drillState.slowestWpmCharCount[slowestWpmLast.index] += 1;
         if (slowestWpmLast.wpm > drillState.slowestWpmBest) {
             drillState.slowestWpmBest = slowestWpmLast.wpm;
         }
+
+        console.log(`Trigger speed stats update`);
+        console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
+
+        currentDrillWords.forEach(word => {
+            updateGlobalSpeedStats();
+        })
 
         const wpm = calculateWPM(typeTextLength, startTime, endTime);
         drillState.wpmLast = wpm;
@@ -749,10 +749,10 @@ function handleTypingInput(e) {
 function updateGlobalAccuracyStats() {
     // 1. GATE: Only calculate and save if the user has a solid history (10+ attempts)
     if (drillState.attempts < 10) {
-        console.log(`Accuracy stat ignored: Only ${drillState.attempts}/10 attempts completed.`);
+        // console.log(`Accuracy stat ignored: Only ${drillState.attempts}/10 attempts completed.`);
         return;
     }
-    
+
     const { totalMistakes, maxMistakes } = getTotalMistakesAndMax();
 
     // 1. Only care if there was at least one mistake
@@ -778,23 +778,31 @@ function updateGlobalAccuracyStats() {
 
     const score = totalMistakes / (wordKey.length * Math.max(1, drillState.attempts));
 
+    // 5. Update the Queue
+    const existingIndex = stats.accuracyQueue.findIndex(w => w.word === wordKey);
+
     const wordData = {
         word: wordKey,
         score: parseFloat(score.toFixed(4)),
         worstIndexes: worstIdxs
     };
 
-    const existingIndex = stats.accuracyQueue.findIndex(w => w.word === wordKey);
     if (existingIndex !== -1) {
+        // Update existing word
         stats.accuracyQueue[existingIndex] = wordData;
     } else {
+        // Add new word
         stats.accuracyQueue.push(wordData);
+
+        // If we exceed 20, remove the oldest (the one at index 0)
+        if (stats.accuracyQueue.length > 20) {
+            stats.accuracyQueue.shift();
+            // console.log("Accuracy queue full: Removed oldest entry.");
+        }
     }
 
-    // 5. CRITICAL: Save back to storage!
+    // 6. CRITICAL: Save back to storage!
     localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(stats));
-
-    console.log(`Accuracy recorded for: ${wordKey}`);
 
     // For sorting when presenting
     // const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY));
