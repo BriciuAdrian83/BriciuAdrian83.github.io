@@ -180,7 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(modal);
     });
     document.querySelector("#settings-btn").addEventListener("click", showSettingsModal);
-
     document.querySelector("#stats-btn").addEventListener("click", () => {
         const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
         const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
@@ -211,11 +210,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </p>
         `;
         } else {
-            // Highlight Helper
+            // Updated Highlight Helper (NO Underline)
             const highlightWord = (wordStr, indices, color) => {
                 return wordStr.split('').map((char, idx) => {
                     return indices.includes(idx)
-                        ? `<span style="color: ${color}; font-weight: bold; border-bottom: 2px solid ${color};">${char}</span>`
+                        ? `<span style="color: ${color}; font-weight: bold;">${char}</span>`
                         : char;
                 }).join('');
             };
