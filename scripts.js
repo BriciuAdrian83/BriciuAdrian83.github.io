@@ -583,7 +583,6 @@ function handleTypingInput(e) {
     if (typeTextLength === 0) return;
     const lastTypedIndex = typeTextLength - 1;
     
-    console.log(`I'm here what's up`);
 
     /* CHEKC IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
     // 1. START of a word (First character)
@@ -618,7 +617,7 @@ function handleTypingInput(e) {
         currentDrillWords.push(possibleWord);
     }
 
-    console.log(`Current Char: ${currentChar} | WordStart: ${wordStart}`);
+    console.log(`Current Char: ${typedText[lastTypedIndex]} | WordStart: ${wordStart}`);
     if (!wordStart && currentDrillWords.length > 0) {
         const lastWord = currentDrillWords[currentDrillWords.length - 1];
         console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
