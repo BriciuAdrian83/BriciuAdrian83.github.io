@@ -184,8 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
 
         // GATES: Based on README.md requirements
-        // Accuracy requires 10 total drills to calculate Mistake Density
-        // Speed requires 5 CLEAN drills to calculate Hesitation Density
         const hasEnoughAccuracy = drillState.attempts >= 10 && stats.accuracyQueue.length > 0;
         const hasEnoughSpeed = drillState.attemptsClean >= 5 && stats.speedQueue.length > 0;
 
@@ -198,8 +196,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
-            background: white; padding: 25px; border-radius: 12px;
-            width: 90%; max-width: 500px; text-align: center;
+            background: white; padding: 18px 25px; border-radius: 10px;
+            width: 90%; max-width: 480px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             font-family: sans-serif;
         `;
@@ -207,8 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!hasEnoughAccuracy || !hasEnoughSpeed) {
             // --- INSUFFICIENT DATA VIEW ---
             modalContent.innerHTML = `
-                <h3 style="color: #666;">Analysis in Progress</h3>
-                <p style="color: #888; font-size: 0.9rem; line-height: 1.6; text-align: left; margin: 20px 0;">
+                <h3 style="color: #666; margin: 0 0 10px 0; font-size: 1.1rem;">Analysis in Progress</h3>
+                <p style="color: #888; font-size: 0.85rem; line-height: 1.4; text-align: left; margin: 10px 0;">
                     We are still gathering data to identify your typing patterns accurately.<br><br>
                     <b>Current Progress:</b><br>
                     • Accuracy: ${drillState.attempts}/10 Drills ${hasEnoughAccuracy ? '✅' : ''}<br>
@@ -217,8 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         } else {
             // --- DATA READY VIEW ---
-
-            // Helper to highlight characters (Strictly NO Underline as per your previous preference)
             const highlightWord = (wordStr, indices, color) => {
                 return wordStr.split('').map((char, idx) => {
                     if (indices.includes(idx)) {
@@ -228,36 +224,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 }).join('');
             };
 
-            // Sort by Density Score (highest first) and take top 4
             const topAccuracy = [...stats.accuracyQueue].sort((a, b) => b.score - a.score).slice(0, 4);
             const topSpeed = [...stats.speedQueue].sort((a, b) => b.score - a.score).slice(0, 4);
 
-            let html = `<h2 style="margin-top:0; color: #333; font-size: 1.4rem;">Practice Insights</h2>
-                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 25px; line-height: 1.4;">
-                        <span style="color: #d9534f; font-weight: bold;">Red:</span> Highest Mistake Density (Accuracy)<br>
-                        <span style="color: #e67e22; font-weight: bold;">Orange:</span> Highest Hesitation Density (Speed in <b>clean</b> runs)
+            let html = `<h2 style="margin: 0 0 5px 0; color: #333; font-size: 1.25rem;">Practice Insights</h2>
+                    <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px; line-height: 1.3;">
+                        <span style="color: #d9534f; font-weight: bold;">Red:</span> Mistake Density | 
+                        <span style="color: #e67e22; font-weight: bold;">Orange:</span> Hesitation Density
                     </p>`;
 
             // Accuracy Section
-            html += `<div style="text-align: left; margin-bottom: 24px;">
-                    <h4 style="color: #d9534f; font-size: 1rem; margin-bottom: 12px; font-weight: 600;">Accuracy Hotspots</h4>
+            html += `<div style="text-align: left; margin-bottom: 15px;">
+                    <h4 style="color: #d9534f; font-size: 0.95rem; margin: 0 0 8px 0; font-weight: 600;">Accuracy Hotspots</h4>
                     <ul style="list-style: none; padding: 0; margin: 0;">`;
             topAccuracy.forEach(item => {
-                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+                html += `<li style="margin-bottom: 6px; font-family: 'Courier New', monospace; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center;">
                         <span>${highlightWord(item.word, item.worstIndexes, '#d9534f')}</span>
-                        <span style="color: #ccc; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
+                        <span style="color: #ccc; font-size: 0.7rem;">Score: ${item.score.toFixed(3)}</span>
                     </li>`;
             });
             html += `</ul></div>`;
 
             // Speed Section
             html += `<div style="text-align: left;">
-                    <h4 style="color: #e67e22; font-size: 1rem; margin-bottom: 12px; font-weight: 600;">Speed Bottlenecks</h4>
+                    <h4 style="color: #e67e22; font-size: 0.95rem; margin: 0 0 8px 0; font-weight: 600;">Speed Bottlenecks</h4>
                     <ul style="list-style: none; padding: 0; margin: 0;">`;
             topSpeed.forEach(item => {
-                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+                html += `<li style="margin-bottom: 6px; font-family: 'Courier New', monospace; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center;">
                         <span>${highlightWord(item.word, item.slowestIndexes, '#e67e22')}</span>
-                        <span style="color: #ccc; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
+                        <span style="color: #ccc; font-size: 0.7rem;">Score: ${item.score.toFixed(3)}</span>
                     </li>`;
             });
             html += `</ul></div>`;
@@ -269,8 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const okButton = document.createElement("button");
         okButton.textContent = "Back to Practice";
         okButton.style.cssText = `
-            margin-top: 25px; padding: 10px 30px; border:none; border-radius:6px;
-            background:#444; color:white; cursor:pointer; font-weight: bold; transition: background 0.2s;
+            margin-top: 15px; padding: 8px 25px; border:none; border-radius:6px;
+            background:#444; color:white; cursor:pointer; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;
         `;
         okButton.onmouseover = () => okButton.style.background = "#222";
         okButton.onmouseout = () => okButton.style.background = "#444";
@@ -477,7 +472,7 @@ function createCharSpan(state, i) {
     charSpan.style.display = "inline-flex";
     charSpan.style.flexDirection = "column";
     charSpan.style.alignItems = "center";
-    charSpan.style.width = "15.6px";
+    charSpan.style.width = "15.7px";
     charSpan.style.flexShrink = "0";
     charSpan.style.overflow = "hidden";
     charSpan.style.fontWeight = "bold";
