@@ -180,10 +180,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(modal);
     });
     document.querySelector("#settings-btn").addEventListener("click", showSettingsModal);
+
     document.querySelector("#stats-btn").addEventListener("click", () => {
         const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
         const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
 
+        // 1. Data Check (Requirement: at least 5 words in each queue)
         const hasEnoughData = stats.accuracyQueue.length >= 5 && stats.speedQueue.length >= 5;
 
         const modal = document.createElement('div');
@@ -202,49 +204,57 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
         if (!hasEnoughData) {
+            // --- INSUFFICIENT DATA VIEW ---
             modalContent.innerHTML = `
             <h3 style="color: #666;">Analysis in Progress</h3>
             <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
-                Practice more to see your hotspots.<br>
+                We need a bit more practice history to identify your patterns.<br><br>
+                <b>Requirement:</b> 5 words in Accuracy and 5 in Speed.<br>
                 (Current: ${stats.accuracyQueue.length} Acc / ${stats.speedQueue.length} Spd)
             </p>
         `;
         } else {
-            // Updated Highlight Helper (NO Underline)
+            // --- DATA READY VIEW ---
+
+            // Helper to highlight characters based on index array (Strictly NO Underline)
             const highlightWord = (wordStr, indices, color) => {
                 return wordStr.split('').map((char, idx) => {
-                    return indices.includes(idx)
-                        ? `<span style="color: ${color}; font-weight: bold;">${char}</span>`
-                        : char;
+                    if (indices.includes(idx)) {
+                        // Only color and weight, no decoration or borders
+                        return `<span style="color: ${color}; font-weight: bold; border: none; text-decoration: none;">${char}</span>`;
+                    }
+                    return char;
                 }).join('');
             };
 
+            // Sort by score (highest first) and take top 4
             const topAccuracy = [...stats.accuracyQueue].sort((a, b) => b.score - a.score).slice(0, 4);
             const topSpeed = [...stats.speedQueue].sort((a, b) => b.score - a.score).slice(0, 4);
 
             let html = `<h2 style="margin-top:0; color: #333; font-size: 1.4rem;">Practice Insights</h2>
-                    <p style="font-size: 0.8rem; color: #777; margin-bottom: 20px;">
-                        Red: High Mistakes | Orange: Slowest Hesitations
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 25px; line-height: 1.4;">
+                        <span style="color: #d9534f; font-weight: bold;">Red:</span> Highest number of mistakes<br>
+                        <span style="color: #e67e22; font-weight: bold;">Orange:</span> Slowest hesitations (Bottlenecks)
                     </p>`;
 
-            // Accuracy Section (Red)
+            // Accuracy Section
             html += `<div style="text-align: left; margin-bottom: 24px;">
-                    <h4 style="color: #d9534f; font-size: 1rem; margin-bottom: 10px;">Accuracy Hotspots</h4>
-                    <ul style="list-style: none; padding: 0;">`;
+                    <h4 style="color: #d9534f; font-size: 1rem; margin-bottom: 12px; font-weight: 600;">Accuracy Hotspots</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0;">`;
             topAccuracy.forEach(item => {
-                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
                         <span>${highlightWord(item.word, item.worstIndexes, '#d9534f')}</span>
                         <span style="color: #ccc; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
                     </li>`;
             });
             html += `</ul></div>`;
 
-            // Speed Section (Darker Orange)
+            // Speed Section
             html += `<div style="text-align: left;">
-                    <h4 style="color: #e67e22; font-size: 1rem; margin-bottom: 10px;">Speed Bottlenecks</h4>
-                    <ul style="list-style: none; padding: 0;">`;
+                    <h4 style="color: #e67e22; font-size: 1rem; margin-bottom: 12px; font-weight: 600;">Speed Bottlenecks</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0;">`;
             topSpeed.forEach(item => {
-                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.1rem; display: flex; justify-content: space-between;">
+                html += `<li style="margin-bottom: 10px; font-family: 'Courier New', monospace; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
                         <span>${highlightWord(item.word, item.slowestIndexes, '#e67e22')}</span>
                         <span style="color: #ccc; font-size: 0.75rem;">Score: ${item.score.toFixed(3)}</span>
                     </li>`;
@@ -254,12 +264,15 @@ document.addEventListener("DOMContentLoaded", () => {
             modalContent.innerHTML = html;
         }
 
+        // Back button
         const okButton = document.createElement("button");
         okButton.textContent = "Back to Practice";
         okButton.style.cssText = `
         margin-top: 25px; padding: 10px 30px; border:none; border-radius:6px;
-        background:#444; color:white; cursor:pointer; font-weight: bold;
+        background:#444; color:white; cursor:pointer; font-weight: bold; transition: background 0.2s;
     `;
+        okButton.onmouseover = () => okButton.style.background = "#222";
+        okButton.onmouseout = () => okButton.style.background = "#444";
         okButton.onclick = () => modal.remove();
         modalContent.appendChild(okButton);
 
