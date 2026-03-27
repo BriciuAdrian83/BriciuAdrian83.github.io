@@ -63,6 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 typingInput.readOnly = false;
                 typingInput.classList.remove('frozen');
                 typingInput.value = "";
+
+                currentDrillWords = [];
+                possibleWord = {};
+                wordStart = false;
+
+
                 startTime = null;
                 endTime = null;
                 consecutiveMistakes = 0;
@@ -191,6 +197,10 @@ function exitEditMode() {
 
 function loadFromStorage() {
     const raw = localStorage.getItem(LOCAL_STORAGE_DRILL_KEY);
+    // Ensure the WORDS key exists independently
+    if (!localStorage.getItem(LOCAL_STORAGE_WORDS_KEY)) {
+        localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify({ accuracyQueue: [], speedQueue: [] }));
+    }
     if (raw === null) {
         return buildFreshState("sample text sequence, ", 60);
     }
@@ -587,7 +597,7 @@ function handleTypingInput(e) {
     
     /* CHECK IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
     // 1. START: If not in a word and char is NOT a space
-    if (!wordStart && currentChar !== ' ') {
+    if (!wordStart && typedText[lastTypedIndex] !== ' ') {
         wordStart = true;
         possibleWord = {
             charsSequence: [typedText[lastTypedIndex]],
@@ -610,11 +620,12 @@ function handleTypingInput(e) {
         
     }
 
-    // console.log(`Current Char: ${typedText[lastTypedIndex]} | WordStart: ${wordStart}`);
-    // if (!wordStart && currentDrillWords.length > 0) {
-    //     const lastWord = currentDrillWords[currentDrillWords.length - 1];
-    //     console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
-    // }
+    console.log(`Current Char: ${typedText[lastTypedIndex]} | WordStart: ${wordStart}`);
+    if (!wordStart && currentDrillWords.length > 0) {
+        const lastWord = currentDrillWords[currentDrillWords.length - 1];
+        console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
+    }
+    
 
     const currentSpan = document.getElementById(`char-${lastTypedIndex}`);
     const nextSpan = document.getElementById(`char-${lastTypedIndex + 1}`);
@@ -766,6 +777,11 @@ function resetDrill(inputEl) {
     inputEl.readOnly = false;
     inputEl.classList.remove('frozen');
     inputEl.value = "";
+
+    currentDrillWords = [];
+    possibleWord = {};
+    wordStart = false;
+
     startTime = null;
     endTime = null;
     consecutiveMistakes = 0;

@@ -105,15 +105,17 @@ For feedback, suggestions, or development inquiries, contact: **sstd_dev_contact
 
 ```JS
 {
-  "word": "responsibilities",
-  "accuracy": {
-    "score": 0.0416,
-    "worstIndexes": [5, 12] // The specific characters with the MAX mistakes
-  },
-  "speed": {
-    "score": 0.0219,
-    "worstIndexes": [18]    // The specific character with the MAX slow count
-  }
+  "accuracyQueue": [
+    { "word": "responsibilities", "score": 0.0416, "worstIndexes": [5, 12] },
+    { "word": "citizens", "score": 0.0310, "worstIndexes": [2] }
+    // ... top 20 worst accuracy words
+  ],
+  "speedQueue": [
+    { "word": "own", "score": 0.0820, "worstIndexes": [1] },
+    { "word": "responsibilities", "score": 0.0219, "worstIndexes": [18] }
+    // ... top 20 worst speed words
+  ]
+}
 }
 ``` 
 
