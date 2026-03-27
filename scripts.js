@@ -583,7 +583,6 @@ function handleTypingInput(e) {
     if (typeTextLength === 0) return;
     
     const lastTypedIndex = typeTextLength - 1;
-    const currentChar = typedText[lastTypedIndex];
     const isLastCharOfDrill = typeTextLength === drillState.drillText.length;
     
     /* CHECK IF IS A WORD AND SAVE CHARS AND INDEXES SEQUENCES */
@@ -591,32 +590,31 @@ function handleTypingInput(e) {
     if (!wordStart && currentChar !== ' ') {
         wordStart = true;
         possibleWord = {
-            charsSequence: [currentChar],
+            charsSequence: [typedText[lastTypedIndex]],
             indexsSequnce: [lastTypedIndex]
         };
     } 
     // 2. CONTINUE: In a word and char is NOT a space
-    else if (wordStart && currentChar !== ' ') {
-        possibleWord.charsSequence.push(currentChar);
+    else if (wordStart && typedText[lastTypedIndex] !== ' ') {
+        possibleWord.charsSequence.push(typedText[lastTypedIndex]);
         possibleWord.indexsSequnce.push(lastTypedIndex);
     }
 
     // 3. END: Close word ONLY on space OR end of drill
-    if (wordStart && (currentChar === ' ' || isLastCharOfDrill)) {
+    if (wordStart && (typedText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
         // If it ended on a space, don't include the space in the word text
         // but keep the word tracking active until this point
         currentDrillWords.push({...possibleWord}); 
         wordStart = false;
         possibleWord = {}; 
         
-        console.log("SUCCESSFULLY CAPTURED:", currentDrillWords[currentDrillWords.length-1].charsSequence.join(""));
     }
 
-    console.log(`Current Char: ${currentChar} | WordStart: ${wordStart}`);
-    if (!wordStart && currentDrillWords.length > 0) {
-        const lastWord = currentDrillWords[currentDrillWords.length - 1];
-        console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
-    }
+    // console.log(`Current Char: ${typedText[lastTypedIndex]} | WordStart: ${wordStart}`);
+    // if (!wordStart && currentDrillWords.length > 0) {
+    //     const lastWord = currentDrillWords[currentDrillWords.length - 1];
+    //     console.log("Captured Word:", lastWord.charsSequence.join(""), "Indices:", lastWord.indexsSequnce);
+    // }
 
     const currentSpan = document.getElementById(`char-${lastTypedIndex}`);
     const nextSpan = document.getElementById(`char-${lastTypedIndex + 1}`);
