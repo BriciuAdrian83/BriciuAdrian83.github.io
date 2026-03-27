@@ -68,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 possibleWord = {};
                 wordStart = false;
 
-
                 startTime = null;
                 endTime = null;
                 consecutiveMistakes = 0;
@@ -114,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector("#typed_text").focus();
     });
 
-
     document.querySelector("#info-btn").addEventListener("click", () => {
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -145,7 +143,6 @@ document.addEventListener("DOMContentLoaded", () => {
             cursor: pointer;
         `;
 
-        // Hover effect: expand to 80% of viewport width
         image.addEventListener("mouseenter", () => {
             image.style.maxWidth = "45vw";
         });
@@ -179,62 +176,66 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
     });
+
     document.querySelector("#settings-btn").addEventListener("click", showSettingsModal);
 
     document.querySelector("#stats-btn").addEventListener("click", () => {
         const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
         const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
 
-        // 1. Data Check (Requirement: at least 5 words in each queue)
-        const hasEnoughData = stats.accuracyQueue.length >= 5 && stats.speedQueue.length >= 5;
+        // GATES: Based on README.md requirements
+        // Accuracy requires 10 total drills to calculate Mistake Density
+        // Speed requires 5 CLEAN drills to calculate Hesitation Density
+        const hasEnoughAccuracy = drillState.attempts >= 10 && stats.accuracyQueue.length > 0;
+        const hasEnoughSpeed = drillState.attemptsClean >= 5 && stats.speedQueue.length > 0;
 
         const modal = document.createElement('div');
         modal.style.cssText = `
-        position: fixed; top:0; left:0; width:100%; height:100%;
-        background: rgba(0,0,0,0.6); z-index:1000;
-        display:flex; align-items:center; justify-content:center;
-    `;
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.6); z-index:1000;
+            display:flex; align-items:center; justify-content:center;
+        `;
 
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
-        background: white; padding: 25px; border-radius: 12px;
-        width: 90%; max-width: 500px; text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        font-family: sans-serif;
-    `;
+            background: white; padding: 25px; border-radius: 12px;
+            width: 90%; max-width: 500px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            font-family: sans-serif;
+        `;
 
-        if (!hasEnoughData) {
+        if (!hasEnoughAccuracy || !hasEnoughSpeed) {
             // --- INSUFFICIENT DATA VIEW ---
             modalContent.innerHTML = `
-            <h3 style="color: #666;">Analysis in Progress</h3>
-            <p style="color: #888; font-size: 0.9rem; line-height: 1.5;">
-                We need a bit more practice history to identify your patterns.<br><br>
-                <b>Requirement:</b> 5 words in Accuracy and 5 in Speed.<br>
-                (Current: ${stats.accuracyQueue.length} Acc / ${stats.speedQueue.length} Spd)
-            </p>
-        `;
+                <h3 style="color: #666;">Analysis in Progress</h3>
+                <p style="color: #888; font-size: 0.9rem; line-height: 1.6; text-align: left; margin: 20px 0;">
+                    We are still gathering data to identify your typing patterns accurately.<br><br>
+                    <b>Current Progress:</b><br>
+                    • Accuracy: ${drillState.attempts}/10 Drills ${hasEnoughAccuracy ? '✅' : ''}<br>
+                    • Speed: ${drillState.attemptsClean}/5 <b>Clean</b> Finishes ${hasEnoughSpeed ? '✅' : ''}
+                </p>
+            `;
         } else {
             // --- DATA READY VIEW ---
 
-            // Helper to highlight characters based on index array (Strictly NO Underline)
+            // Helper to highlight characters (Strictly NO Underline as per your previous preference)
             const highlightWord = (wordStr, indices, color) => {
                 return wordStr.split('').map((char, idx) => {
                     if (indices.includes(idx)) {
-                        // Only color and weight, no decoration or borders
                         return `<span style="color: ${color}; font-weight: bold; border: none; text-decoration: none;">${char}</span>`;
                     }
                     return char;
                 }).join('');
             };
 
-            // Sort by score (highest first) and take top 4
+            // Sort by Density Score (highest first) and take top 4
             const topAccuracy = [...stats.accuracyQueue].sort((a, b) => b.score - a.score).slice(0, 4);
             const topSpeed = [...stats.speedQueue].sort((a, b) => b.score - a.score).slice(0, 4);
 
             let html = `<h2 style="margin-top:0; color: #333; font-size: 1.4rem;">Practice Insights</h2>
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 25px; line-height: 1.4;">
-                        <span style="color: #d9534f; font-weight: bold;">Red:</span> Highest number of mistakes<br>
-                        <span style="color: #e67e22; font-weight: bold;">Orange:</span> Slowest hesitations (Bottlenecks)
+                        <span style="color: #d9534f; font-weight: bold;">Red:</span> Highest Mistake Density (Accuracy)<br>
+                        <span style="color: #e67e22; font-weight: bold;">Orange:</span> Highest Hesitation Density (Speed in <b>clean</b> runs)
                     </p>`;
 
             // Accuracy Section
@@ -268,9 +269,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const okButton = document.createElement("button");
         okButton.textContent = "Back to Practice";
         okButton.style.cssText = `
-        margin-top: 25px; padding: 10px 30px; border:none; border-radius:6px;
-        background:#444; color:white; cursor:pointer; font-weight: bold; transition: background 0.2s;
-    `;
+            margin-top: 25px; padding: 10px 30px; border:none; border-radius:6px;
+            background:#444; color:white; cursor:pointer; font-weight: bold; transition: background 0.2s;
+        `;
         okButton.onmouseover = () => okButton.style.background = "#222";
         okButton.onmouseout = () => okButton.style.background = "#444";
         okButton.onclick = () => modal.remove();
@@ -296,7 +297,6 @@ function exitEditMode() {
 
 function loadFromStorage() {
     const raw = localStorage.getItem(LOCAL_STORAGE_DRILL_KEY);
-    // Ensure the WORDS key exists independently
     if (!localStorage.getItem(LOCAL_STORAGE_WORDS_KEY)) {
         localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify({ accuracyQueue: [], speedQueue: [] }));
     }
@@ -307,6 +307,7 @@ function loadFromStorage() {
     // migrate old states missing new fields
     if (state.slowestWpmBest === undefined) state.slowestWpmBest = 0;
     if (state.attempts === undefined) state.attempts = 0;
+    if (state.attemptsClean === undefined) state.attemptsClean = 0;
     if (state.slowestWpmCharCount === undefined) state.slowestWpmCharCount = Array(state.drillText.length).fill(0);
     if (state.lastDrillWasClean === undefined) state.lastDrillWasClean = false;
     if (state.freezeAfterTwoMistakes === undefined) state.freezeAfterTwoMistakes = 0;
@@ -329,6 +330,7 @@ function buildFreshState(drillText, wpmTarget) {
         slowestCharLastIndex: null,
         slowestWpmBest: 0,
         attempts: 0,
+        attemptsClean: 0,
         wpmHistory: Array(10).fill(0),
         lastTypedSequence: "",
         charMistakesTotal: Array(len).fill(0),
@@ -362,7 +364,6 @@ function addSequenceFormElements(state, containerEL) {
 }
 
 function addWpmStatsElements(state) {
-    // console.log(JSON.stringify(state));
     document.querySelector("#wpm-target-value").innerHTML = state.wpmTarget;
     document.querySelector("#wpm-last-value").innerHTML = state.wpmLast;
     document.querySelector("#wpm-best-value").innerHTML = state.wpmBest;
@@ -374,7 +375,6 @@ function addWpmStatsElements(state) {
     } else {
         winStreakEl.style.color = "green";
         winStreakEl.style.fontWeight = "bold";
-
     }
     document.querySelector("#wpm-slowest-last-value").innerHTML = slowestWpmLast.wpm === Number.POSITIVE_INFINITY ? 0 : slowestWpmLast.wpm;
     document.querySelector("#wpm-slowest-best-value").innerHTML = state.slowestWpmBest;
@@ -404,7 +404,6 @@ function addLastTypedSequenceDataToForm(state) {
     if (state.lastTypedSequence.length === 0) return;
 
     const container = createContainerForLastTyped();
-
     const preCharSpan = createPreCharSpan();
     container.appendChild(preCharSpan);
 
@@ -555,30 +554,17 @@ function showCongratulationsModal(message, okLabel) {
 }
 
 function showSettingsModal() {
-
     const modal = document.createElement("div");
     modal.style.cssText = `
-        position: fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background: rgba(0,0,0,0.5);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        z-index:1000;
+        position: fixed; top:0; left:0; width:100%; height:100%;
+        background: rgba(0,0,0,0.5); display:flex;
+        align-items:center; justify-content:center; z-index:1000;
     `;
 
     const modalContent = document.createElement("div");
     modalContent.style.cssText = `
-        background:white;
-        padding:28px;
-        border-radius:8px;
-        min-width:320px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
+        background:white; padding:28px; border-radius:8px;
+        min-width:320px; display:flex; flex-direction:column; justify-content:center;
     `;
 
     const title = document.createElement("h5");
@@ -586,16 +572,9 @@ function showSettingsModal() {
     title.style.marginBottom = "10px";
     title.style.textAlign = "center";
 
-    // First toggle - Freeze after mistakes
     const formCheck1 = document.createElement("div");
     formCheck1.className = "form-check form-switch";
-    formCheck1.style.cssText = `
-        display:flex;
-        align-items:center;
-        gap:12px;
-        margin-top:18px;
-        margin-bottom:18px;
-    `;
+    formCheck1.style.cssText = `display:flex; align-items:center; gap:12px; margin-top:18px; margin-bottom:18px;`;
 
     const freezeToggle = document.createElement("input");
     freezeToggle.className = "form-check-input";
@@ -615,22 +594,15 @@ function showSettingsModal() {
     formCheck1.appendChild(freezeToggle);
     formCheck1.appendChild(freezeLabel);
 
-    // Second toggle - Show space character
     const formCheck2 = document.createElement("div");
     formCheck2.className = "form-check form-switch";
-    formCheck2.style.cssText = `
-        display:flex;
-        align-items:center;
-        gap:12px;
-        margin-top:18px;
-        margin-bottom:18px;
-    `;
+    formCheck2.style.cssText = `display:flex; align-items:center; gap:12px; margin-top:18px; margin-bottom:18px;`;
 
     const spaceToggle = document.createElement("input");
     spaceToggle.className = "form-check-input";
     spaceToggle.type = "checkbox";
     spaceToggle.id = "space-toggle";
-    spaceToggle.checked = drillState.showSpaceCharOnTopDrill === 1; // Fixed this line
+    spaceToggle.checked = drillState.showSpaceCharOnTopDrill === 1;
     spaceToggle.style.transform = "scale(1.4)";
     spaceToggle.style.cursor = "pointer";
 
@@ -645,11 +617,7 @@ function showSettingsModal() {
     formCheck2.appendChild(spaceLabel);
 
     const buttonContainer = document.createElement("div");
-    buttonContainer.style.cssText = `
-        margin-top:20px;
-        display:flex;
-        justify-content:space-between;
-    `;
+    buttonContainer.style.cssText = `margin-top:20px; display:flex; justify-content:space-between;`;
 
     const cancelBtn = document.createElement("button");
     cancelBtn.className = "btn btn-secondary";
@@ -659,7 +627,6 @@ function showSettingsModal() {
     const okBtn = document.createElement("button");
     okBtn.className = "btn btn-primary";
     okBtn.textContent = "Save";
-
     okBtn.onclick = () => {
         drillState.freezeAfterTwoMistakes = freezeToggle.checked ? 1 : 0;
         drillState.showSpaceCharOnTopDrill = spaceToggle.checked ? 1 : 0;
@@ -680,12 +647,9 @@ function showSettingsModal() {
     document.body.appendChild(modal);
 }
 
-
 function startTimerOnFirstKey(e) {
     if (startTime === null && e.key !== "Enter" && e.key !== "Shift") startTime = Date.now();
 }
-
-
 
 // --- Typing logic ---
 
@@ -698,7 +662,6 @@ function handleTypingInput(e) {
     const isLastCharOfDrill = typeTextLength === drillState.drillText.length;
 
     /* 1. WORD CAPTURE & ACCURACY TRIGGER */
-    // Check if the DRILL TEXT (not what was typed) is a space
     if (drillState.drillText[lastTypedIndex] !== ' ') {
         if (!wordStart) {
             wordStart = true;
@@ -712,14 +675,8 @@ function handleTypingInput(e) {
         }
     }
 
-    // END WORD: Trigger only if the DRILL position is a space OR end of drill
     if (wordStart && (drillState.drillText[lastTypedIndex] === ' ' || isLastCharOfDrill)) {
-        // Log exactly what word the system is about to process
-        // console.log(`Trigger update accuracy stat update`);
-        // console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequence[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
-        // console.log(JSON.stringify(possibleWord));
         updateGlobalAccuracyStats();
-
         currentDrillWords.push({ ...possibleWord });
         wordStart = false;
         possibleWord = {};
@@ -731,7 +688,6 @@ function handleTypingInput(e) {
     if (currentSpan) currentSpan.classList.remove('current');
     if (nextSpan) nextSpan.classList.add('current');
 
-    // Check if character is correct
     if (typedText[lastTypedIndex] === drillState.drillText[lastTypedIndex]) {
         currentSpan.classList.add('correct');
         currentSpan.classList.remove('incorrect');
@@ -739,7 +695,6 @@ function handleTypingInput(e) {
         consecutiveMistakes = 0;
         endTime = Date.now();
 
-        // Calculate WPM for slowness tracking
         if (lastTypedIndex === 0) {
             intermediateEndTime = endTime;
         } else {
@@ -751,12 +706,10 @@ function handleTypingInput(e) {
             intermediateEndTime = endTime;
         }
     } else {
-        // Character is incorrect
         currentSpan.classList.add('incorrect');
         currentSpan.classList.remove('correct');
         drillState.charMistakesLast[lastTypedIndex] = 1;
         drillState.charMistakesTotal[lastTypedIndex] += 1;
-
         consecutiveMistakes += 1;
         hadMistake = true;
     }
@@ -806,12 +759,9 @@ function handleTypingInput(e) {
             drillState.slowestWpmBest = slowestWpmLast.wpm;
         }
 
-        // console.log(`Trigger speed stats update`);
-        // console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
-
         currentDrillWords.forEach(word => {
             updateGlobalSpeedStats(word);
-        })
+        });
 
         const wpm = calculateWPM(typeTextLength, startTime, endTime);
         drillState.wpmLast = wpm;
@@ -822,6 +772,7 @@ function handleTypingInput(e) {
         if (wpm > drillState.wpmBest) drillState.wpmBest = wpm;
         drillState.winStreak = wpm >= drillState.wpmTarget ? drillState.winStreak + 1 : 0;
         drillState.attempts += 1;
+        drillState.attemptsClean += 1; // CHANGE: increment clean attempts counter
         drillState.lastDrillWasClean = true;
         drillState.slowestCharLastIndex = slowestWpmLast.index;
 
@@ -833,7 +784,6 @@ function handleTypingInput(e) {
         addWpmStatsElements(drillState);
         keepCursorAtEnd(e.target);
 
-        // Success Modal Check
         const successCount = drillState.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
         if (drillState.winStreak >= 3 && drillState.attempts >= 10 && rate >= 50) {
@@ -846,24 +796,16 @@ function handleTypingInput(e) {
 }
 
 function updateGlobalAccuracyStats() {
-    // 1. GATE: Only calculate and save if the user has a solid history (10+ attempts)
-    if (drillState.attempts < 10) {
-        // console.log(`Accuracy stat ignored: Only ${drillState.attempts}/10 attempts completed.`);
-        return;
-    }
+    // gate: 10 total attempts
+    if (drillState.attempts < 10) return;
 
     const { totalMistakes, maxMistakes } = getTotalMistakesAndMax();
-
-    // 1. Only care if there was at least one mistake
     if (totalMistakes === 0) return;
 
     const startIndex = possibleWord.indexsSequence[0];
     const endIndex = possibleWord.indexsSequence[possibleWord.indexsSequence.length - 1];
-
-    // 2. Get the clean word string
     const wordKey = drillState.drillText.substring(startIndex, endIndex + 1).trim();
 
-    // 3. Identify "Hotspots" 
     const worstIdxs = [];
     possibleWord.indexsSequence.forEach((idx, i) => {
         if (drillState.charMistakesTotal[idx] === maxMistakes) {
@@ -871,14 +813,10 @@ function updateGlobalAccuracyStats() {
         }
     });
 
-    // 4. Load & Update Data
     const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
     const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
 
     const score = totalMistakes / (wordKey.length * Math.max(1, drillState.attempts));
-
-    // 5. Update the Queue
-    const existingIndex = stats.accuracyQueue.findIndex(w => w.word === wordKey);
 
     const wordData = {
         word: wordKey,
@@ -886,33 +824,18 @@ function updateGlobalAccuracyStats() {
         worstIndexes: worstIdxs
     };
 
+    const existingIndex = stats.accuracyQueue.findIndex(w => w.word === wordKey);
     if (existingIndex !== -1) {
-        // Update existing word
         stats.accuracyQueue[existingIndex] = wordData;
     } else {
-        // Add new word
         stats.accuracyQueue.push(wordData);
-
-        // If we exceed 20, remove the oldest (the one at index 0)
-        if (stats.accuracyQueue.length > 20) {
-            stats.accuracyQueue.shift();
-            // console.log("Accuracy queue full: Removed oldest entry.");
-        }
+        if (stats.accuracyQueue.length > 20) stats.accuracyQueue.shift();
     }
 
-    // 6. CRITICAL: Save back to storage!
     localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(stats));
-
-    // For sorting when presenting
-    // const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY));
-    // const topProblemWords = stats.accuracyQueue
-    //     .sort((a, b) => b.score - a.score) // Sort highest score to lowest
-    //     .slice(0, 10); // Take the top 10
 }
 
-
 function getTotalMistakesAndMax() {
-    // Safety: If there is no active word, return zeros immediately
     if (!possibleWord.indexsSequence) return { totalMistakes: 0, maxMistakes: 0 };
 
     let totalMistakes = 0;
@@ -923,32 +846,23 @@ function getTotalMistakesAndMax() {
     wordIndexsSequence.forEach(idx => {
         const mistakesAtChar = charMistakesTotal[idx] || 0;
         totalMistakes += mistakesAtChar;
-
-        if (mistakesAtChar > maxMistakes) {
-            maxMistakes = mistakesAtChar;
-        }
+        if (mistakesAtChar > maxMistakes) maxMistakes = mistakesAtChar;
     });
 
     return { totalMistakes, maxMistakes };
 }
 
 function updateGlobalSpeedStats(word) {
-    if (drillState.attempts < 10) return;
+    // CHANGE: gate on attemptsClean instead of attempts
+    if (drillState.attemptsClean < 5) return;
 
-    // console.log(`Word is: "${word.charsSequence.join('')}"`);
-
-    // 1. Calculate Total Slows and Max Slows for this word range
-    // Mirroring getTotalMistakesAndMax()
     const { totalSlows, maxSlows } = getTotalSlowsAndMaxForRange(word.indexsSequence);
-
-    // 2. Only record if this word actually contained a "slowest character" event
     if (totalSlows === 0) return;
 
     const startIndex = word.indexsSequence[0];
     const endIndex = word.indexsSequence[word.indexsSequence.length - 1];
     const wordKey = drillState.drillText.substring(startIndex, endIndex + 1).trim();
 
-    // 3. Identify "Slow Hotspots" (indices where max slows happened)
     const slowestIdxs = [];
     word.indexsSequence.forEach((idx, i) => {
         if (drillState.slowestWpmCharCount[idx] === maxSlows) {
@@ -956,14 +870,11 @@ function updateGlobalSpeedStats(word) {
         }
     });
 
-    // console.log(`Slow indexes: ${JSON.stringify(slowestIdxs)}`);
-
-    // 4. Load & Update Data
     const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
     const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
 
-    // 5. Calculate Score (Slow Events / (Length * Attempts))
-    const score = totalSlows / (wordKey.length * drillState.attempts);
+    // CHANGE: use attemptsClean as denominator — numerator only increments on clean drills
+    const score = totalSlows / (wordKey.length * Math.max(1, drillState.attemptsClean));
 
     const wordData = {
         word: wordKey,
@@ -995,10 +906,6 @@ function getTotalSlowsAndMaxForRange(wordIndexes) {
     return { totalSlows, maxSlows };
 }
 
-
-
-
-
 function keepCursorAtEnd(inputEl) {
     const len = inputEl.value.length;
     inputEl.selectionStart = len;
@@ -1022,7 +929,6 @@ function preventKeysResetOnEnter(e) {
         const typingInput = document.querySelector("#typed_text");
         if (typingInput.value.length > 0) {
             if (!drillCompleted) {
-                // abandoned mid-drill — record as fail
                 drillState.wpmLast = 0;
                 drillState.wpmHistory.shift();
                 drillState.wpmHistory.push(0);
@@ -1064,7 +970,6 @@ function resetDrill(inputEl) {
 }
 
 function calculateWPM(typeTextLength, startTime, endTime) {
-    // Formula: wpm = (charTyped / 5) * (60 / timeInSeconds)
     const timeInSeconds = (endTime - startTime) * 0.001;
     const wpm = (typeTextLength / 5) * (60 / timeInSeconds);
     return Math.round(wpm);
