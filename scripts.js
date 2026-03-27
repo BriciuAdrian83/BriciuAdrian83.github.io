@@ -711,7 +711,7 @@ function handleTypingInput(e) {
         console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
 
         currentDrillWords.forEach(word => {
-            updateGlobalSpeedStats();
+            updateGlobalSpeedStats(word);
         })
 
         const wpm = calculateWPM(typeTextLength, startTime, endTime);
@@ -803,6 +803,74 @@ function updateGlobalAccuracyStats() {
 
     // 6. CRITICAL: Save back to storage!
     localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(stats));
+
+    // For sorting when presenting
+    // const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY));
+    // const topProblemWords = stats.accuracyQueue
+    //     .sort((a, b) => b.score - a.score) // Sort highest score to lowest
+    //     .slice(0, 10); // Take the top 10
+}
+
+
+function updateGlobalSpeedStats(word) {
+    // 1. GATE: Only calculate and save if the user has a solid history (10+ attempts)
+    if (drillState.attempts < 10) {
+        // console.log(`Accuracy stat ignored: Only ${drillState.attempts}/10 attempts completed.`);
+        return;
+    }
+
+    console.log(JSON.stringify(word));
+
+    // const { totalMistakes, maxMistakes } = getTotalMistakesAndMax();
+
+    // // 1. Only care if there was at least one mistake
+    // if (totalMistakes === 0) return;
+
+    // const startIndex = possibleWord.indexsSequence[0];
+    // const endIndex = possibleWord.indexsSequence[possibleWord.indexsSequence.length - 1];
+
+    // // 2. Get the clean word string
+    // const wordKey = drillState.drillText.substring(startIndex, endIndex + 1).trim();
+
+    // // 3. Identify "Hotspots" 
+    // const worstIdxs = [];
+    // possibleWord.indexsSequence.forEach((idx, i) => {
+    //     if (drillState.charMistakesTotal[idx] === maxMistakes) {
+    //         worstIdxs.push(i);
+    //     }
+    // });
+
+    // // 4. Load & Update Data
+    // const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+    // const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
+
+    // const score = totalMistakes / (wordKey.length * Math.max(1, drillState.attempts));
+
+    // // 5. Update the Queue
+    // const existingIndex = stats.accuracyQueue.findIndex(w => w.word === wordKey);
+
+    // const wordData = {
+    //     word: wordKey,
+    //     score: parseFloat(score.toFixed(4)),
+    //     worstIndexes: worstIdxs
+    // };
+
+    // if (existingIndex !== -1) {
+    //     // Update existing word
+    //     stats.accuracyQueue[existingIndex] = wordData;
+    // } else {
+    //     // Add new word
+    //     stats.accuracyQueue.push(wordData);
+
+    //     // If we exceed 20, remove the oldest (the one at index 0)
+    //     if (stats.accuracyQueue.length > 20) {
+    //         stats.accuracyQueue.shift();
+    //         // console.log("Accuracy queue full: Removed oldest entry.");
+    //     }
+    // }
+
+    // // 6. CRITICAL: Save back to storage!
+    // localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(stats));
 
     // For sorting when presenting
     // const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY));
