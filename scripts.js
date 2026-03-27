@@ -707,8 +707,8 @@ function handleTypingInput(e) {
             drillState.slowestWpmBest = slowestWpmLast.wpm;
         }
 
-        console.log(`Trigger speed stats update`);
-        console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
+        // console.log(`Trigger speed stats update`);
+        // console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
 
         currentDrillWords.forEach(word => {
             updateGlobalSpeedStats(word);
@@ -836,7 +836,7 @@ function getTotalMistakesAndMax() {
 function updateGlobalSpeedStats(word) {
     if (drillState.attempts < 10) return;
     
-    console.log(`Word is: "${word.charsSequence.join('')}"`);
+    // console.log(`Word is: "${word.charsSequence.join('')}"`);
 
     // 1. Calculate Total Slows and Max Slows for this word range
     // Mirroring getTotalMistakesAndMax()
@@ -857,7 +857,7 @@ function updateGlobalSpeedStats(word) {
         }
     });
 
-    console.log(`Slow indexes: ${JSON.stringify(slowestIdxs)}`);
+    // console.log(`Slow indexes: ${JSON.stringify(slowestIdxs)}`);
 
     // 4. Load & Update Data
     const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
