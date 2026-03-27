@@ -836,7 +836,7 @@ function getTotalMistakesAndMax() {
 function updateGlobalSpeedStats(word) {
     if (drillState.attempts < 10) return;
     
-    console.log(`Word is: ${word}`);
+    console.log(`Word is: "${word.charsSequence.join('')}"`);
 
     // 1. Calculate Total Slows and Max Slows for this word range
     // Mirroring getTotalMistakesAndMax()
