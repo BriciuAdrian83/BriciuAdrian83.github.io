@@ -619,7 +619,7 @@ function handleTypingInput(e) {
         console.log(`Trigger update accuracy stat update`);
         console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequence[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
         console.log(JSON.stringify(possibleWord));
-        updateGlobalAccuracyStats(possibleWord);
+        updateGlobalAccuracyStats();
 
         currentDrillWords.push({ ...possibleWord });
         wordStart = false;
@@ -704,7 +704,7 @@ function handleTypingInput(e) {
         // --- CLEAN FINISH (SUCCESS) ---
         // console.log(`Trigger speed stats update`);
         // console.log("Speed Update for All Words:", currentDrillWords.map(w => w.charsSequence.join("")));
-        
+
         // currentDrillWords.forEach(word => {
         //     updateGlobalSpeedStats(word);
         // });
@@ -747,9 +747,60 @@ function handleTypingInput(e) {
 }
 
 function updateGlobalAccuracyStats() {
-    // get the mistakes 
-    const totalMistakesAndMax = getTotalMistakesAndMax();
-    console.log(JSON.stringify(totalMistakesAndMax));
+    // 1. GATE: Only calculate and save if the user has a solid history (10+ attempts)
+    if (drillState.attempts < 10) {
+        console.log(`Accuracy stat ignored: Only ${drillState.attempts}/10 attempts completed.`);
+        return;
+    }
+    
+    const { totalMistakes, maxMistakes } = getTotalMistakesAndMax();
+
+    // 1. Only care if there was at least one mistake
+    if (totalMistakes === 0) return;
+
+    const startIndex = possibleWord.indexsSequence[0];
+    const endIndex = possibleWord.indexsSequence[possibleWord.indexsSequence.length - 1];
+
+    // 2. Get the clean word string
+    const wordKey = drillState.drillText.substring(startIndex, endIndex + 1).trim();
+
+    // 3. Identify "Hotspots" 
+    const worstIdxs = [];
+    possibleWord.indexsSequence.forEach((idx, i) => {
+        if (drillState.charMistakesTotal[idx] === maxMistakes) {
+            worstIdxs.push(i);
+        }
+    });
+
+    // 4. Load & Update Data
+    const statsRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+    const stats = statsRaw ? JSON.parse(statsRaw) : { accuracyQueue: [], speedQueue: [] };
+
+    const score = totalMistakes / (wordKey.length * Math.max(1, drillState.attempts));
+
+    const wordData = {
+        word: wordKey,
+        score: parseFloat(score.toFixed(4)),
+        worstIndexes: worstIdxs
+    };
+
+    const existingIndex = stats.accuracyQueue.findIndex(w => w.word === wordKey);
+    if (existingIndex !== -1) {
+        stats.accuracyQueue[existingIndex] = wordData;
+    } else {
+        stats.accuracyQueue.push(wordData);
+    }
+
+    // 5. CRITICAL: Save back to storage!
+    localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(stats));
+
+    console.log(`Accuracy recorded for: ${wordKey}`);
+
+    // For sorting when presenting
+    // const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY));
+    // const topProblemWords = stats.accuracyQueue
+    //     .sort((a, b) => b.score - a.score) // Sort highest score to lowest
+    //     .slice(0, 10); // Take the top 10
 }
 
 function getTotalMistakesAndMax() {
@@ -764,7 +815,7 @@ function getTotalMistakesAndMax() {
     wordIndexsSequence.forEach(idx => {
         const mistakesAtChar = charMistakesTotal[idx] || 0;
         totalMistakes += mistakesAtChar;
-        
+
         if (mistakesAtChar > maxMistakes) {
             maxMistakes = mistakesAtChar;
         }
@@ -795,11 +846,6 @@ function preventKeysResetOnEnter(e) {
         e.preventDefault();
         const typingInput = document.querySelector("#typed_text");
         if (typingInput.value.length > 0) {
-            if (wordStart && !drillCompleted) {
-                console.log("Enter pressed: Registering unfinished word mistakes...");
-                console.log(JSON.stringify(possibleWord));
-                updateGlobalAccuracyStats();
-            }
             if (!drillCompleted) {
                 // abandoned mid-drill — record as fail
                 drillState.wpmLast = 0;
