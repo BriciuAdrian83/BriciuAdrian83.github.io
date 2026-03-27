@@ -477,7 +477,7 @@ function createCharSpan(state, i) {
     charSpan.style.display = "inline-flex";
     charSpan.style.flexDirection = "column";
     charSpan.style.alignItems = "center";
-    charSpan.style.width = "15px";
+    charSpan.style.width = "15.5px";
     charSpan.style.flexShrink = "0";
     charSpan.style.overflow = "hidden";
     charSpan.style.fontWeight = "bold";

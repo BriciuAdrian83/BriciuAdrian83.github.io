@@ -30,8 +30,8 @@ body {
   height: 70%;
   max-width: 1200px;
   display: grid;
-  grid-template-columns: 1fr 5fr 1fr 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 1fr 6fr 1fr 1fr;
+  grid-template-rows: auto auto 2fr;
   gap: 16px;
   padding: 20px;
 }
