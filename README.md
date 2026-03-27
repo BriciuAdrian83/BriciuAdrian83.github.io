@@ -102,6 +102,6 @@ git clone https://github.com/yourusername/small-sequence-typing-drill.git
 
 ## License
 This project is open-source and free to use.  
-For feedback, suggestions, or development inquiries, contact: **sstd_dev_contact@gmail.com**
+For feedback, suggestions, or development inquiries, contact: **sstd.dev.contact@gmail.com**
 
 
