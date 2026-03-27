@@ -619,7 +619,7 @@ function handleTypingInput(e) {
         console.log(`Trigger update accuracy stat update`);
         console.log("Accuracy Update for:", drillState.drillText.substring(possibleWord.indexsSequence[0], lastTypedIndex + (isLastCharOfDrill && drillState.drillText[lastTypedIndex] !== ' ' ? 1 : 0)).trim());
         console.log(JSON.stringify(possibleWord));
-        // updateGlobalAccuracyStats(possibleWord);
+        updateGlobalAccuracyStats(possibleWord);
 
         currentDrillWords.push({ ...possibleWord });
         wordStart = false;
@@ -746,6 +746,33 @@ function handleTypingInput(e) {
     }
 }
 
+function updateGlobalAccuracyStats() {
+    // get the mistakes 
+    const totalMistakesAndMax = getTotalMistakesAndMax();
+    console.log(JSON.stringify(totalMistakesAndMax));
+}
+
+function getTotalMistakesAndMax() {
+    // Safety: If there is no active word, return zeros immediately
+    if (!possibleWord.indexsSequence) return { totalMistakes: 0, maxMistakes: 0 };
+
+    let totalMistakes = 0;
+    let maxMistakes = 0;
+    const charMistakesTotal = drillState.charMistakesTotal;
+    const wordIndexsSequence = possibleWord.indexsSequence;
+
+    wordIndexsSequence.forEach(idx => {
+        const mistakesAtChar = charMistakesTotal[idx] || 0;
+        totalMistakes += mistakesAtChar;
+        
+        if (mistakesAtChar > maxMistakes) {
+            maxMistakes = mistakesAtChar;
+        }
+    });
+
+    return { totalMistakes, maxMistakes };
+}
+
 function keepCursorAtEnd(inputEl) {
     const len = inputEl.value.length;
     inputEl.selectionStart = len;
@@ -768,6 +795,11 @@ function preventKeysResetOnEnter(e) {
         e.preventDefault();
         const typingInput = document.querySelector("#typed_text");
         if (typingInput.value.length > 0) {
+            if (wordStart && !drillCompleted) {
+                console.log("Enter pressed: Registering unfinished word mistakes...");
+                console.log(JSON.stringify(possibleWord));
+                updateGlobalAccuracyStats();
+            }
             if (!drillCompleted) {
                 // abandoned mid-drill — record as fail
                 drillState.wpmLast = 0;
