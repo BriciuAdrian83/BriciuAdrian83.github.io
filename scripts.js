@@ -569,7 +569,7 @@ function refreshHistorySelect2(filterType) {
 
     // Append filtered items (reversed so newest is first)
     filteredQueue.reverse().forEach(drill => {
-        const option = new Option(`${drill.drillText} (${drill.wpmTarget} WPM)`, drill.drillText, false, false);
+        const option = new Option(`${drill.drillText} (${drill.wpmTarget} WPM) ${drill.nextReviewAt !== null? (succces)}`, drill.drillText, false, false);
         $(option).data('wpm', drill.wpmTarget);
         $select.append(option);
     });
