@@ -13,6 +13,7 @@ You can test your typing performance, track your WPM, and identify mistakes in r
 - **Local Storage**
   - Stores the last typing drill at key `"a+3_sstd_last_drill"` in JSON format.
   - Stores the word stat data (accuracy and speed) at key `a+3_sstd_words_stats`.
+    - also stores drill history queue in order for reusing previous drills
   
 - **Default Sequence**
   - If no previous sequence is found in storage, the default drill is:
@@ -92,13 +93,22 @@ git clone https://github.com/yourusername/small-sequence-typing-drill.git
 4. Press **Enter** to restart at any time (or press try again button).  
 5. Observe your **WPM and streaks** in real time.  
 
-## Future Improvements
-- Maintain a **drill list** with multiple sequences.  
-- Track **last practiced date** and success rate per drill.  
-- Add **progress visualization** (charts for WPM history, streaks, and accuracy). 
-- Last typed sequence have useful data for (see ![App Screenshot](./images/sstd_last_typed.png)):
-  - improving on mistakes, the last chars typed that represents mistakes in the last typing session are marked red above and total no. of mistakes (cumulative) are shown.
-  - improving on slow char, the slowest char on the last try is shown in red and count of slowest (cumulative) chars are also noted.
+## Change / History Drill Improvements
+1. OverviewThis document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system allows users to save custom drill sequences, track their mastery over time, and use Spaced Repetition (SRS) to optimize muscle memory.
+2. Storage KeyAll data is stored in the browser's localStorage:Key: a+3_sstd_words_statsFormat: JSON Object containing an array named historyQueue
+3. Data Schema (The Drill Object)Each entry in the historyQueue follows this structure:PropertyTypeDescriptiondrillTextStringThe unique text sequence. Used as the unique identifier for lookups.wpmTargetNumberThe specific WPM goal set for this drill.createdAtNumberUnix timestamp (ms) of when the drill was first created.succeededTimesNumberIncrements each time the "Mastery" criteria is met.nextReviewAtNumber | nullThe calculated Unix timestamp for the next scheduled practice session.
+Example JSON
+```JSON
+{
+  "drillText": "yet another one drill time",
+  "wpmTarget": 75,
+  "createdAt": 1774935009192,
+  "succeededTimes": 1,
+  "nextReviewAt": 1775280609192
+}
+```
+4. Operational LogicA. Saving Drills (addToDrillHistory)Condition: Triggered on form submission if the text does not already exist in history.Duplicate Check: Uses findHistoryDrillIndex to perform a reverse-search of the array.Safety: Automatically initializes the historyQueue array if it is missing from storage.B. Updating Targets (updateDrillHistoryWpmTarget)Condition: Triggered if the user changes the WPM target for a text sequence already present in the history.Action: Updates the wpmTarget value without resetting success counts or timestamps.C. Spaced Repetition Math (updateDrillHistoryNextReviewOnSucceed)Trigger: Fired when the user achieves a 3-win streak with a 50% success rate over the last 10 attempts.The Formula:$NextReview = CurrentTime + (4 \text{ days} \times succeededTimes)$Conversion: $4 \text{ days} = 345,600,000 \text{ milliseconds}$.
+5. Planned UI EnhancementsWith this data structure in place, the following filters are supported for the upcoming Select2 implementation:Today: Filter by createdAt matching today's date.Spaced (Due): Filter by nextReviewAt <= Date.now().All: Display the full historyQueue.
 
 ## License
 This project is open-source and free to use.  

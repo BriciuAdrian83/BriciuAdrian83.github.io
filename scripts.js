@@ -334,7 +334,30 @@ function updateDrillHistoryWpmTarget(drillText, wpmTarget) {
         drillHistory.historyQueue = historyQueue;
         localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
     }
+}
 
+function updateDrillHistoryNextReviewOnSucceed(drillText) {
+    const drillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+    const drillHistory = drillHistoryRaw ? JSON.parse(drillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
+    const historyQueue = drillHistory.historyQueue;
+    const historyQueueLength = historyQueue.length;
+    if (historyQueueLength === 0) return;
+    const historyIdx = findHistoryDrillIndex(historyQueue, historyQueueLength, drillText);
+    if (historyIdx !== null) {
+        // 1. Increment the success counter
+        historyQueue[historyIdx].succeededTimes += 1;
+
+        // 2. Calculate the delay
+        // (4 days * hours * minutes * seconds * milliseconds)
+        const daysInMs = 4 * 24 * 60 * 60 * 1000;
+        const totalDelay = daysInMs * historyQueue[historyIdx].succeededTimes;
+
+        // 3. Set the future timestamp
+        historyQueue[historyIdx].nextReviewAt = Date.now() + totalDelay;
+
+        // 4. Save back to storage
+        localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory)); historyQueue[historyIdx].succeededTimes += 1;
+    }
 }
 
 function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {
@@ -846,6 +869,7 @@ function handleTypingInput(e) {
         const successCount = drillState.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
         if (drillState.winStreak >= 3 && drillState.attempts >= 10 && rate >= 50) {
+            updateDrillHistoryNextReviewOnSucceed(drillState.drillText);
             setTimeout(() => showCongratulationsModal(
                 `🎉 ${drillState.winStreak} wins in a row and ${rate}% success rate on the last 10 attempts. Keep it up!`,
                 'OK'
