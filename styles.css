@@ -244,6 +244,12 @@ body {
   visibility: hidden;
 }
 
+.grid-container .edit-mode .drill-row-last-typed {
+  visibility: hidden;
+}
+
+
+
 .grid-container.edit-mode #try-again-btn,
 .grid-container.edit-mode #change-sequence-btn {
   display: none;
