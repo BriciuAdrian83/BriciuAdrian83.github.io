@@ -295,6 +295,80 @@ document.addEventListener("DOMContentLoaded", () => {
     filterAll.addEventListener('click', handleFilterChange);
     filterSpaced.addEventListener('click', handleFilterChange);
 
+    document.querySelector("#history-info-btn").addEventListener("click", () => {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+        position: fixed;
+        top:0; left:0; width:100%; height:100%;
+        background: rgba(0,0,0,0.5); z-index:1001;
+        display:flex; align-items:center; justify-content:center;
+    `;
+
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+        background: white; padding: 25px; border-radius: 12px;
+        max-width: 450px; width: 90%; text-align: left;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        display: flex; flex-direction: column;
+        font-family: sans-serif;
+    `;
+
+        const title = document.createElement("h3");
+        title.style.cssText = "margin-bottom: 15px; font-size: 1.2rem; color: #333; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;";
+        title.innerHTML = '<i class="fa-solid fa-clock-rotate-left" style="margin-right:10px; color:#0dcaf0;"></i> Spaced Repetition Filter';
+        modalContent.appendChild(title);
+
+        const text = document.createElement("div");
+        text.style.cssText = "font-size: 0.9rem; color: #444; line-height: 1.5;";
+        text.innerHTML = `
+        The <b>Spaced</b> option filters your history to show only drills that are <b>due for review</b>. 
+        <br><br>
+        When you master a drill (3 wins in a row with >50% accuracy), it levels up and disappears from this list until its timer expires:
+        <br><br>
+        <table style="width:100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; background: #fdfdfd;">
+            <tr style="background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
+                <th style="padding:8px; text-align:left;">Success</th>
+                <th style="padding:8px; text-align:left;">Wait Time</th>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding:6px 8px;">Level 1</td><td style="padding:6px 8px;">1 Day</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding:6px 8px;">Level 2</td><td style="padding:6px 8px;">3 Days</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding:6px 8px;">Level 3</td><td style="padding:6px 8px;">1 Week</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding:6px 8px;">Level 4</td><td style="padding:6px 8px;">1 Month</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding:6px 8px;">Level 5+</td><td style="padding:6px 8px;">3 Months</td>
+            </tr>
+        </table>
+        <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; font-size: 0.8rem;">
+            <b>Note:</b> If you fail the WPM target, the level resets to 0. The drill will then stay in the <b>Spaced</b> list for daily practice until mastered again.
+        </div>
+    `;
+        modalContent.appendChild(text);
+
+        const okButton = document.createElement("button");
+        okButton.textContent = "Got it";
+        okButton.style.cssText = `
+        margin-top: 20px; padding: 8px 24px; border:none; border-radius:6px;
+        background:#0dcaf0; color:white; cursor:pointer; align-self: flex-end;
+        font-weight: bold;
+    `;
+        okButton.onmouseover = () => okButton.style.backgroundColor = "#0baccc";
+        okButton.onmouseout = () => okButton.style.backgroundColor = "#0dcaf0";
+        okButton.onclick = () => modal.remove();
+        modalContent.appendChild(okButton);
+
+        modal.appendChild(modalContent);
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+    });
+
 });
 
 // --- Edit mode toggle ---
@@ -365,17 +439,28 @@ function updateDrillHistoryNextReviewOnSucceed(drillText) {
         // 1. Increment the success counter
         historyQueue[historyIdx].succeededTimes += 1;
 
-        // 2. Calculate the delay
-        // (4 days * hours * minutes * seconds * milliseconds)
-        const daysInMs = 4 * 24 * 60 * 60 * 1000;
-        const totalDelay = daysInMs * historyQueue[historyIdx].succeededTimes;
-
-        // 3. Set the future timestamp
-        historyQueue[historyIdx].nextReviewAt = Date.now() + totalDelay;
-
-        // 4. Save back to storage
-        localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory)); historyQueue[historyIdx].succeededTimes += 1;
+        const futureTimestamp = calculateNextReview(historyQueue[historyIdx].succeededTimes);
+        historyQueue[historyIdx].nextReviewAt = futureTimestamp;
+        localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
     }
+}
+
+function calculateNextReview(currentLevel) {
+    const now = Date.now();
+    const day = 86400000;
+
+    // Level 1 starts at index 0
+    const intervals = [
+        day,          // Level 1: 1 Day
+        day * 3,      // Level 2: 3 Days
+        day * 7,      // Level 3: 1 Week
+        day * 30,     // Level 4: 1 Month
+        day * 90      // Level 5+: 3 Months
+    ];
+
+    // Use the level to pick the interval (cap at the last index for 5+)
+    const index = Math.min(currentLevel - 1, intervals.length - 1);
+    return now + intervals[index];
 }
 
 function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {

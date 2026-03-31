@@ -94,21 +94,7 @@ git clone https://github.com/yourusername/small-sequence-typing-drill.git
 5. Observe your **WPM and streaks** in real time.  
 
 ## Change / History Drill Improvements
-1. OverviewThis document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system allows users to save custom drill sequences, track their mastery over time, and use Spaced Repetition (SRS) to optimize muscle memory.
-2. Storage KeyAll data is stored in the browser's localStorage:Key: a+3_sstd_words_statsFormat: JSON Object containing an array named historyQueue
-3. Data Schema (The Drill Object)Each entry in the historyQueue follows this structure:PropertyTypeDescriptiondrillTextStringThe unique text sequence. Used as the unique identifier for lookups.wpmTargetNumberThe specific WPM goal set for this drill.createdAtNumberUnix timestamp (ms) of when the drill was first created.succeededTimesNumberIncrements each time the "Mastery" criteria is met.nextReviewAtNumber | nullThe calculated Unix timestamp for the next scheduled practice session.
-Example JSON
-```JSON
-{
-  "drillText": "yet another one drill time",
-  "wpmTarget": 75,
-  "createdAt": 1774935009192,
-  "succeededTimes": 1,
-  "nextReviewAt": 1775280609192
-}
-```
-4. Operational LogicA. Saving Drills (addToDrillHistory)Condition: Triggered on form submission if the text does not already exist in history.Duplicate Check: Uses findHistoryDrillIndex to perform a reverse-search of the array.Safety: Automatically initializes the historyQueue array if it is missing from storage.B. Updating Targets (updateDrillHistoryWpmTarget)Condition: Triggered if the user changes the WPM target for a text sequence already present in the history.Action: Updates the wpmTarget value without resetting success counts or timestamps.C. Spaced Repetition Math (updateDrillHistoryNextReviewOnSucceed)Trigger: Fired when the user achieves a 3-win streak with a 50% success rate over the last 10 attempts.The Formula:$NextReview = CurrentTime + (4 \text{ days} \times succeededTimes)$Conversion: $4 \text{ days} = 345,600,000 \text{ milliseconds}$.
-5. Planned UI EnhancementsWith this data structure in place, the following filters are supported for the upcoming Select2 implementation:Today: Filter by createdAt matching today's date.Spaced (Due): Filter by nextReviewAt <= Date.now().All: Display the full historyQueue.
+1. OverviewThis document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system utilizes a Level-based Spaced Repetition (SRS) algorithm to optimize muscle memory by increasing review intervals as mastery is demonstrated.2. Storage KeyKey: a+3_sstd_words_statsFormat: JSON Object containing an array named historyQueue.3. Data Schema (The Drill Object)PropertyTypeDescriptiondrillTextStringUnique identifier for the drill.wpmTargetNumberThe WPM goal for this sequence.createdAtNumberUnix timestamp (ms) of creation.succeededTimesNumberThe Level. Increments on mastery; resets to 0 on failure.nextReviewAtNumber | nullUnix timestamp for the next scheduled session.4. Operational LogicA. Saving & UpdatingNew Drills: Initialized with succeededTimes: 0 and nextReviewAt: null.Target Updates: Changing WPM for an existing drill updates wpmTarget but preserves history/level.B. Mastery CriteriaA drill is considered "Succeeded" (Mastered) when:The user achieves a 3-win streak.The success rate is ≥ 50% over the last 10 attempts.C. Spaced Repetition Progression (The Ladder)Instead of a flat addition, the nextReviewAt interval expands exponentially based on the succeededTimes (Level).Level (After Success)IntervalCalculation (ms)Level 14 HoursDate.now() + 14,400,000Level 21 DayDate.now() + 86,400,000Level 33 DaysDate.now() + 259,200,000Level 41 WeekDate.now() + 604,800,000Level 5+2 WeeksDate.now() + 1,209,600,000D. Failure Logic (The Reset)If a user fails to meet the target WPM during a session:succeededTimes is reset to 0.nextReviewAt is set to null (making it appear in the "Today" and "All" queues immediately).5. UI ImplementationThe Select2 history search uses these logic gates:Today: new Date(item.createdAt).toDateString() === new Date().toDateString()Spaced (Due): item.nextReviewAt !== null && item.nextReviewAt <= Date.now()All: Returns the entire historyQueue (sorted by newest first).
 
 ## License
 This project is open-source and free to use.  
