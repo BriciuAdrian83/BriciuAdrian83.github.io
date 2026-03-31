@@ -327,8 +327,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <br><br>
         <table style="width:100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; background: #fdfdfd;">
             <tr style="background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
-                <th style="padding:8px; text-align:left;">Success</th>
+                <th style="padding:8px; text-align:left;">Mastery Level</th>
                 <th style="padding:8px; text-align:left;">Wait Time</th>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee; color: #dc3545; font-weight: bold;">
+                <td style="padding:6px 8px;">Level 0</td><td style="padding:6px 8px;">Not Passed (Daily Practice)</td>
             </tr>
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding:6px 8px;">Level 1</td><td style="padding:6px 8px;">1 Day</td>
@@ -347,9 +350,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>
         </table>
         <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; font-size: 0.8rem;">
-            <b>Note:</b> If you fail the WPM target, the level resets to 0. The drill will then stay in the <b>Spaced</b> list for daily practice until mastered again.
+            <b>Lvl 0 Status:</b> This is the starting level. Drills at Lvl 0 have not been passed yet and will appear in the <b>Spaced</b> list every day until you achieve mastery.
         </div>
     `;
+        modalContent.appendChild(text);
         modalContent.appendChild(text);
 
         const okButton = document.createElement("button");
@@ -569,7 +573,12 @@ function refreshHistorySelect2(filterType) {
 
     // Append filtered items (reversed so newest is first)
     filteredQueue.reverse().forEach(drill => {
-        const option = new Option(`${drill.drillText} (${drill.wpmTarget} WPM) ${drill.nextReviewAt !== null? (succces)}`, drill.drillText, false, false);
+        const option = new Option(
+            `${drill.drillText} (${drill.wpmTarget} WPM)${parseInt(drill.succeededTimes, 10) > 0 ? ` [Lvl ${drill.succeededTimes}]` : ''}`,
+            drill.drillText,
+            false,
+            false
+        );
         $(option).data('wpm', drill.wpmTarget);
         $select.append(option);
     });
