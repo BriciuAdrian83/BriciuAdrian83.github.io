@@ -305,8 +305,20 @@ function addToDrillHistory(drillText, wpmTarget) {
         "succeededTimes": 0,
         "nextReviewAt": null
     };
-    currentDrillHistory.historyQueue.push(currentDrill);
-    localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(currentDrillHistory));
+    const historyQueueLength = currentDrillHistory.historyQueue.length;
+    if (historyQueueLength > 0) {
+        const historyIdx = findHistoryDrillIndex(currentDrillHistory.historyQueue, historyQueueLength, drillText);
+        if (historyIdx === null) {
+            if (historyQueueLength > 100) {
+                currentDrillHistory.historyQueue.shift();
+            }
+            currentDrillHistory.historyQueue.push(currentDrill);
+            localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(currentDrillHistory));
+        }
+    } else {
+        currentDrillHistory.historyQueue.push(currentDrill);
+        localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(currentDrillHistory));
+    }
 
 }
 
@@ -320,7 +332,7 @@ function updateDrillHistoryWpmTarget(drillText, wpmTarget) {
     if (historyIdx !== null) {
         historyQueue[historyIdx].wpmTarget = wpmTarget;
         drillHistory.historyQueue = historyQueue;
-         localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
+        localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
     }
 
 }
@@ -334,7 +346,7 @@ function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {
         }
     }
 
-    return null; 
+    return null;
 }
 
 
