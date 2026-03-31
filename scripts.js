@@ -323,8 +323,6 @@ document.addEventListener("DOMContentLoaded", () => {
         text.innerHTML = `
         The <b>Spaced</b> option filters your history to show only drills that are <b>due for review</b>. 
         <br><br>
-        When you master a drill (3 wins in a row with >50% accuracy), it levels up and disappears from this list until its timer expires:
-        <br><br>
         <table style="width:100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; background: #fdfdfd;">
             <tr style="background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
                 <th style="padding:8px; text-align:left;">Mastery Level</th>
@@ -349,6 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td style="padding:6px 8px;">Level 5+</td><td style="padding:6px 8px;">3 Months</td>
             </tr>
         </table>
+        When you master a drill (3 wins in a row with >50% accuracy), drills are marked with levels (from 1 to 5):
+        <br><br>
         <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; font-size: 0.8rem;">
             <b>Lvl 0 Status:</b> This is the starting level. Drills at Lvl 0 have not been passed yet and will appear as <b>-- Not passed --</b> in the list. Once mastered, they will show <b>Lvl (number)</b>.
         </div>
