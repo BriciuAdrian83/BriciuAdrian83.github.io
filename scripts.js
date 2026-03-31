@@ -392,11 +392,14 @@ function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {
 
 // History drill
 function resetSequenceForm() {
-    // 1. Reset Master Toggle to Manual
+    // Reset Master Toggle to Manual
     const methodManual = document.getElementById('methodManual');
     methodManual.checked = true;
-    // 5. Trigger the UI layout update to hide/show correct rows
+    // Trigger the UI layout update to hide/show correct rows
     handleFormOnTypeOfChange('manual');
+    // Reset History Filter to Today
+    const filterToday = document.getElementById('filterToday');
+    if (filterToday) filterToday.checked = true;
 };
 
 // 1. Master Toggle: Manual vs History
@@ -405,6 +408,13 @@ function handleMethodChange() {
         handleFormOnTypeOfChange('manual');
     } else {
         handleFormOnTypeOfChange('filter');
+        // Clear and Reset Select2
+        const $select = $('#historySelect');
+        if ($select.length && $select.data('select2')) {
+            $select.val(null).trigger('change');
+        }
+        // Populate today
+        refreshHistorySelect2('today');
     }
 };
 
@@ -473,6 +483,13 @@ function refreshHistorySelect2(filterType) {
         placeholder: "Search your drills...",
         allowClear: true
     });
+
+
+    // 1. First, set focus to the underlying element
+    $select.focus();
+
+    // 2. Trigger the dropdown to open and automatically focus the search input
+    $select.select2('open');
 
     // Handle Selection
     // Inside your refreshHistorySelect2 function:
