@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (textChanged) {
                     addSequenceFormElements(drillState, document.querySelector(".sequence-container"));
                     addWpmStatsElements(drillState);
+                    console.log(`should add to drill history`);
                     addToDrillHistory(drillText, wpmTarget);
                 } else if (targetChanged) {
                     document.querySelector("#wpm-target-value").innerHTML = wpmTarget;
