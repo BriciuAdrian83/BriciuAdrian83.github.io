@@ -264,10 +264,14 @@ body {
   display: none;
 }
 
-/* Keeps the element in the layout (blocking space) but hides it from view */
-.keep-space-hidden {
+/* Column 1 Save Button Fix */
+#drillTextChangeBtn.keep-space-hidden {
     visibility: hidden !important;
-    pointer-events: none;
-    /* This ensures Row 3 never moves up when Row 2 is "hidden" */
-    display: block !important; 
+    pointer-events: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    /* This keeps the width so the column doesn't snap thin, 
+       but removes the vertical 'double gap' appearance */
 }

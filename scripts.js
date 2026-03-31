@@ -400,12 +400,23 @@ function resetSequenceForm() {
     // Reset History Filter to Today
     const filterToday = document.getElementById('filterToday');
     if (filterToday) filterToday.checked = true;
+
+    setTimeout(() => {
+        const seqInput = document.getElementById('sequenceText');
+        seqInput.focus();
+        seqInput.select(); // Highlights text if any exists
+    }, 50);
 };
 
 // 1. Master Toggle: Manual vs History
 function handleMethodChange() {
     if (document.getElementById('methodManual').checked) {
         handleFormOnTypeOfChange('manual');
+        setTimeout(() => {
+            const seqInput = document.getElementById('sequenceText');
+            seqInput.focus();
+            seqInput.select(); // Highlights text if any exists
+        }, 50);
     } else {
         handleFormOnTypeOfChange('filter');
         // Clear and Reset Select2
@@ -502,6 +513,7 @@ function refreshHistorySelect2(filterType) {
         document.getElementById('wpmTarget').value = selectedWpm;
 
         document.getElementById('sequence-form').requestSubmit();
+        exitEditMode();
     });
 }
 
