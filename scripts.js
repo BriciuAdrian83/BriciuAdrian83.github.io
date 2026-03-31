@@ -350,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>
         </table>
         <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; font-size: 0.8rem;">
-            <b>Lvl 0 Status:</b> This is the starting level. Drills at Lvl 0 have not been passed yet and will appear as <b>-- not passed --</b> in the list. Once mastered, they will show <b>Lvl (number)</b>.
+            <b>Lvl 0 Status:</b> This is the starting level. Drills at Lvl 0 have not been passed yet and will appear as <b>-- Not passed --</b> in the list. Once mastered, they will show <b>Lvl (number)</b>.
         </div>
     `;
         modalContent.appendChild(text);
@@ -573,7 +573,7 @@ function refreshHistorySelect2(filterType) {
     // Append filtered items (reversed so newest is first)
     filteredQueue.reverse().forEach(drill => {
         const option = new Option(
-            `${drill.drillText} (${drill.wpmTarget} WPM)${parseInt(drill.succeededTimes, 10) > 0 ? ` [Lvl ${drill.succeededTimes}]` : `-- not passed --`}`,
+            `${drill.drillText} (${drill.wpmTarget} WPM)${parseInt(drill.succeededTimes, 10) > 0 ? ` [Lvl ${drill.succeededTimes}]` : ` -- Not passed --`}`,
             drill.drillText,
             false,
             false
