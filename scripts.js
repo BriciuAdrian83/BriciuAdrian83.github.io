@@ -53,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (textChanged) {
                     addSequenceFormElements(drillState, document.querySelector(".sequence-container"));
                     addWpmStatsElements(drillState);
-                    console.log(`should add to drill history`);
                     addToDrillHistory(drillText, wpmTarget);
                 } else if (targetChanged) {
                     document.querySelector("#wpm-target-value").innerHTML = wpmTarget;
@@ -296,6 +295,9 @@ function exitEditMode() {
 function addToDrillHistory(drillText, wpmTarget) {
     const currentDrillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
     const currentDrillHistory = currentDrillHistoryRaw ? JSON.parse(currentDrillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
+    if (!currentDrillHistory.historyQueue) {
+        currentDrillHistory.historyQueue = [];
+    }
     const currentDrill = {
         "drillText": drillText,
         "wpmTarget": wpmTarget,
