@@ -244,7 +244,7 @@ body {
   visibility: hidden;
 }
 
-.grid-container .edit-mode .drill-row-last-typed {
+.grid-container.edit-mode .drill-row-last-typed {
   visibility: hidden;
 }
 
