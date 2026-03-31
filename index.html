@@ -46,14 +46,63 @@
                     </div>
                     <!-- edit mode: sequence + wpm inputs -->
                     <div class="sequence-edit">
+                        <div class="d-flex justify-content-start gap-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="inputMethod" id="methodManual"
+                                    value="manual" checked>
+                                <label class="form-check-label" for="methodManual">Manual</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="inputMethod" id="methodHistory"
+                                    value="history">
+                                <label class="form-check-label" for="methodHistory">History</label>
+                            </div>
+                        </div>
+
                         <form name="sequence-form" id="sequence-form">
-                            <div class="d-flex gap-2">
+                            <div id="manualInputRow" class="d-flex gap-2">
                                 <input type="text" class="form-control form-control-sm" id="sequenceText"
-                                    name="sequenceText" placeholder="drill sequence..." required minlength="3"
-                                    autocomplete="on" autocorrect="off" autocapitalize="off" spellcheck="false">
-                                <input class="form-control form-control-sm wpm-input" id="wpmTarget" name="wpmTarget"
-                                    placeholder="wpm" inputmode="numeric" required
-                                    oninput="this.value = this.value.replace(/\D+/g, '')">
+                                    name="sequenceText" placeholder="drill sequence..." required>
+                                <input class="form-control form-control-sm" id="wpmTarget" name="wpmTarget"
+                                    placeholder="wpm" style="width: 65px;" required>
+                            </div>
+
+                            <div id="historyControlsRow" class="d-none d-flex flex-wrap align-items-center gap-3">
+
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="historyFilter"
+                                            id="filterToday" value="today" checked>
+                                        <label class="form-check-label" for="filterToday"
+                                            style="font-size: 0.85rem;">Today</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="historyFilter" id="filterAll"
+                                            value="all">
+                                        <label class="form-check-label" for="filterAll"
+                                            style="font-size: 0.85rem;">All</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="historyFilter"
+                                            id="filterSpaced" value="spaced">
+                                        <label class="form-check-label" for="filterSpaced"
+                                            style="font-size: 0.85rem;">Spaced</label>
+                                    </div>
+                                </div>
+
+                                <div style="flex-grow: 1; min-width: 200px;">
+                                    <select class="form-control form-control-sm" id="historySelect" name="historySelect"
+                                        style="width: 100%;">
+                                        <option value="">Search history...</option>
+                                    </select>
+                                </div>
+
+                                <input class="form-control form-control-sm" id="historyWpmTarget"
+                                    name="historyWpmTarget" placeholder="wpm" style="width: 65px;" required>
+
+                                <button type="button" class="btn btn-outline-info btn-sm" id="history-info-btn">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                </button>
                             </div>
                         </form>
                     </div>

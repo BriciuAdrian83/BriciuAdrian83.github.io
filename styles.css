@@ -248,6 +248,15 @@ body {
   visibility: hidden;
 }
 
+.invisible-space {
+    visibility: hidden !important;
+}
+
+.keep-space-hidden {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important; /* Prevents clicking while hidden */
+}
 
 
 .grid-container.edit-mode #try-again-btn,
