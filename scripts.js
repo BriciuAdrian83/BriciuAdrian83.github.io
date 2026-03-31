@@ -53,8 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (textChanged) {
                     addSequenceFormElements(drillState, document.querySelector(".sequence-container"));
                     addWpmStatsElements(drillState);
+                    addToDrillHistory(drillText, wpmTarget);
                 } else if (targetChanged) {
                     document.querySelector("#wpm-target-value").innerHTML = wpmTarget;
+                    updateDrillHistoryWpmTarget(drillText, wpmTarget);
                 }
 
                 exitEditMode();
@@ -287,6 +289,53 @@ function enterEditMode() {
 function exitEditMode() {
     document.querySelector(".grid-container").classList.remove("edit-mode");
 }
+
+
+// --- History data ---
+function addToDrillHistory(drillText, wpmTarget) {
+    const currentDrillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+    const currentDrillHistory = currentDrillHistoryRaw ? JSON.parse(currentDrillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
+    const currentDrill = {
+        "drillText": drillText,
+        "wpmTarget": wpmTarget,
+        "createdAt": Date.now(),
+        "succeededTimes": 0,
+        "nextReviewAt": null
+    };
+    currentDrillHistory.historyQueue.push(currentDrill);
+    localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(currentDrillHistory));
+
+}
+
+function updateDrillHistoryWpmTarget(drillText, wpmTarget) {
+    const drillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+    const drillHistory = drillHistoryRaw ? JSON.parse(drillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
+    const historyQueue = drillHistory.historyQueue;
+    const historyQueueLength = historyQueue.length;
+    if (historyQueueLength === 0) return;
+    const historyIdx = findHistoryDrillIndex(historyQueue, historyQueueLength, drillText);
+    if (historyIdx !== null) {
+        historyQueue[historyIdx].wpmTarget = wpmTarget;
+        drillHistory.historyQueue = historyQueue;
+         localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
+    }
+
+}
+
+function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {
+    const lastIndex = historyQueueLength - 1;
+
+    for (let i = lastIndex; i >= 0; i--) {
+        if (historyQueue[i].drillText === drillText) {
+            return i;
+        }
+    }
+
+    return null; 
+}
+
+
+
 
 // --- Storage helpers ---
 
