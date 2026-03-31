@@ -279,13 +279,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // History events
+    const methodManual = document.getElementById('methodManual');
+    const methodHistory = document.getElementById('methodHistory');
+
     // 1 Method filter
     methodManual.addEventListener('change', handleMethodChange);
     methodHistory.addEventListener('change', handleMethodChange);
 
-    filterToday.addEventListener('change', handleFilterChange);
-    filterAll.addEventListener('change', handleFilterChange);
-    filterSpaced.addEventListener('change', handleFilterChange);
+    // 2 History filer
+
+    const filterToday = document.getElementById('filterToday');
+    const filterAll = document.getElementById('filterAll');
+    const filterSpaced = document.getElementById('filterSpaced');
+    filterToday.addEventListener('click', handleFilterChange);
+    filterAll.addEventListener('click', handleFilterChange);
+    filterSpaced.addEventListener('click', handleFilterChange);
 
 });
 
@@ -429,7 +437,6 @@ function handleFormOnTypeOfChange(methodType) {
 }
 
 function handleFilterChange(e) {
-    console.log(`option filter ${e.target.value}`);
     refreshHistorySelect2(e.target.value);
 };
 function refreshHistorySelect2(filterType) {
@@ -471,13 +478,12 @@ function refreshHistorySelect2(filterType) {
     // Inside your refreshHistorySelect2 function:
     $select.on('select2:select', function (e) {
         const data = e.params.data;
-        // Get the WPM from the data-attribute we stored when creating the <option>
+        const selectedText = data.id;
         const selectedWpm = $(e.params.data.element).data('wpm');
 
-        // Fill the hidden WPM input from the manual group
+        document.getElementById('sequenceText').value = selectedText;
         document.getElementById('wpmTarget').value = selectedWpm;
 
-        // Trigger the submit automatically
         document.getElementById('sequence-form').requestSubmit();
     });
 }
