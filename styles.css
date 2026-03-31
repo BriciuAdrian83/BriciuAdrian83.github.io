@@ -248,16 +248,6 @@ body {
   visibility: hidden;
 }
 
-.invisible-space {
-    visibility: hidden !important;
-}
-
-.keep-space-hidden {
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important; /* Prevents clicking while hidden */
-}
-
 
 .grid-container.edit-mode #try-again-btn,
 .grid-container.edit-mode #change-sequence-btn {
@@ -272,4 +262,12 @@ body {
 #drillTextChangeBtn,
 #cancel-btn {
   display: none;
+}
+
+/* Keeps the element in the layout (blocking space) but hides it from view */
+.keep-space-hidden {
+    visibility: hidden !important;
+    pointer-events: none;
+    /* This ensures Row 3 never moves up when Row 2 is "hidden" */
+    display: block !important; 
 }

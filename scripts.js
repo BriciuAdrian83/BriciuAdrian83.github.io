@@ -104,14 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelector("#change-sequence-btn").addEventListener("click", () => {
-        const form = document.querySelector("form[name='sequence-form']");
-        form.sequenceText.value = drillState.drillText;
-        form.wpmTarget.value = drillState.wpmTarget;
         enterEditMode();
+        resetSequenceForm();
     });
 
     document.querySelector("#cancel-btn").addEventListener("click", () => {
         exitEditMode();
+        resetSequenceForm();
         document.querySelector("#typed_text").focus();
     });
 
@@ -278,101 +277,16 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(modal);
     });
 
-    // History drill
-    const methodManual = document.getElementById('methodManual');
-    const methodHistory = document.getElementById('methodHistory');
-    const manualRow = document.getElementById('manualInputRow');
-    const historyRow = document.getElementById('historyControlsRow');
-    const saveBtn = document.getElementById('drillTextChangeBtn')
 
-    // Filters
-    const filterToday = document.getElementById('filterToday');
-    const filterAll = document.getElementById('filterAll');
-    const filterSpaced = document.getElementById('filterSpaced');
-
-    // 1. Master Toggle: Manual vs History
-    const handleMethodChange = () => {
-        if (methodManual.checked) {
-            manualRow.classList.remove('d-none');
-            historyRow.classList.add('d-none');
-            if (saveBtn) {
-                saveBtn.classList.remove('invisible-space');
-                saveBtn.classList.remove('d-none');
-            }
-
-            document.getElementById('sequenceText').required = true;
-        } else {
-            manualRow.classList.add('d-none');
-            historyRow.classList.remove('d-none');
-            if (saveBtn) {
-                saveBtn.classList.add('invisible-space');
-                saveBtn.classList.add('d-none');
-            }
-            document.getElementById('sequenceText').required = false;
-
-            // When opening history, auto-select "Today" filter and render
-            filterToday.checked = true;
-            refreshHistorySelect2('today');
-        }
-    };
-
+    // History events
+    // 1 Method filter
     methodManual.addEventListener('change', handleMethodChange);
     methodHistory.addEventListener('change', handleMethodChange);
-
-    // 2. Filter Toggles
-    const handleFilterChange = (e) => {
-        refreshHistorySelect2(e.target.value);
-    };
 
     filterToday.addEventListener('change', handleFilterChange);
     filterAll.addEventListener('change', handleFilterChange);
     filterSpaced.addEventListener('change', handleFilterChange);
 
-    // 3. Render function with the 3 sorting algorithms
-    function refreshHistorySelect2(filterType) {
-        const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY)) || { historyQueue: [] };
-        const $select = $('#historySelect');
-
-        $select.empty().append('<option value="">Search history...</option>');
-
-        let filteredQueue = [...stats.historyQueue];
-        const now = Date.now();
-
-        // Apply specific filter logic
-        if (filterType === 'today') {
-            const todayStr = new Date().toDateString();
-            filteredQueue = filteredQueue.filter(item =>
-                new Date(item.createdAt).toDateString() === todayStr
-            );
-        } else if (filterType === 'spaced') {
-            filteredQueue = filteredQueue.filter(item =>
-                item.nextReviewAt !== null && item.nextReviewAt <= now
-            );
-        }
-        // 'all' doesn't need a filter, it just uses the full queue
-
-        // Append filtered items (reversed so newest is first)
-        filteredQueue.reverse().forEach(drill => {
-            const option = new Option(`${drill.drillText} (${drill.wpmTarget} WPM)`, drill.drillText, false, false);
-            $(option).data('wpm', drill.wpmTarget);
-            $select.append(option);
-        });
-
-        // Re-initialize Select2
-        $select.select2({
-            placeholder: "Search your drills...",
-            allowClear: true
-        });
-
-        // Handle Selection
-        $select.on('select2:select', function (e) {
-            const wpm = $(e.element).find('option:selected').data('wpm');
-            document.getElementById('historyWpmTarget').value = wpm;
-
-            // Auto-submit on pick
-            document.querySelector("form[name='sequence-form']").requestSubmit();
-        });
-    }
 });
 
 // --- Edit mode toggle ---
@@ -387,7 +301,7 @@ function exitEditMode() {
 }
 
 
-// --- History data ---
+// --- History ---
 function addToDrillHistory(drillText, wpmTarget) {
     const currentDrillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
     const currentDrillHistory = currentDrillHistoryRaw ? JSON.parse(currentDrillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
@@ -468,6 +382,105 @@ function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {
     return null;
 }
 
+// History drill
+function resetSequenceForm() {
+    // 1. Reset Master Toggle to Manual
+    const methodManual = document.getElementById('methodManual');
+    methodManual.checked = true;
+    // 5. Trigger the UI layout update to hide/show correct rows
+    handleFormOnTypeOfChange('manual');
+};
+
+// 1. Master Toggle: Manual vs History
+function handleMethodChange() {
+    if (document.getElementById('methodManual').checked) {
+        handleFormOnTypeOfChange('manual');
+    } else {
+        handleFormOnTypeOfChange('filter');
+    }
+};
+
+function handleFormOnTypeOfChange(methodType) {
+    const filterRow = document.getElementById('historyFilterRow');
+    const manualGroup = document.getElementById('manualInputGroup');
+    const historyGroup = document.getElementById('historySelectGroup');
+    const saveBtn = document.getElementById('drillTextChangeBtn');
+    if (methodType === 'manual') {
+        filterRow.classList.add('d-none');
+        manualGroup.classList.remove('d-none');
+        historyGroup.classList.add('d-none');
+        if (saveBtn) saveBtn.classList.remove('keep-space-hidden');
+        document.getElementById('sequenceText').required = true;
+        const form = document.querySelector("form[name='sequence-form']");
+        form.sequenceText.value = drillState.drillText;
+        form.wpmTarget.value = drillState.wpmTarget;
+    } else {
+        filterRow.classList.remove('d-none');
+        manualGroup.classList.add('d-none');
+        historyGroup.classList.remove('d-none');
+        // Hide Save button in History mode but keep its width in Column 1
+        if (saveBtn) saveBtn.classList.add('keep-space-hidden');
+
+        document.getElementById('sequenceText').required = false;
+        // refreshHistorySelect2();
+    }
+
+
+}
+
+function handleFilterChange(e) {
+    console.log(`option filter ${e.target.value}`);
+    refreshHistorySelect2(e.target.value);
+};
+function refreshHistorySelect2(filterType) {
+    const stats = JSON.parse(localStorage.getItem(LOCAL_STORAGE_WORDS_KEY)) || { historyQueue: [] };
+    const $select = $('#historySelect');
+
+    $select.empty().append('<option value="">Search history...</option>');
+
+    let filteredQueue = [...stats.historyQueue];
+    const now = Date.now();
+
+    // Apply specific filter logic
+    if (filterType === 'today') {
+        const todayStr = new Date().toDateString();
+        filteredQueue = filteredQueue.filter(item =>
+            new Date(item.createdAt).toDateString() === todayStr
+        );
+    } else if (filterType === 'spaced') {
+        filteredQueue = filteredQueue.filter(item =>
+            item.nextReviewAt !== null && item.nextReviewAt <= now
+        );
+    }
+    // 'all' doesn't need a filter, it just uses the full queue
+
+    // Append filtered items (reversed so newest is first)
+    filteredQueue.reverse().forEach(drill => {
+        const option = new Option(`${drill.drillText} (${drill.wpmTarget} WPM)`, drill.drillText, false, false);
+        $(option).data('wpm', drill.wpmTarget);
+        $select.append(option);
+    });
+
+    // Re-initialize Select2
+    $select.select2({
+        placeholder: "Search your drills...",
+        allowClear: true
+    });
+
+    // Handle Selection
+    // Inside your refreshHistorySelect2 function:
+    $select.on('select2:select', function (e) {
+        const data = e.params.data;
+        // Get the WPM from the data-attribute we stored when creating the <option>
+        const selectedWpm = $(e.params.data.element).data('wpm');
+
+        // Fill the hidden WPM input from the manual group
+        document.getElementById('wpmTarget').value = selectedWpm;
+
+        // Trigger the submit automatically
+        document.getElementById('sequence-form').requestSubmit();
+    });
+}
 
 
 
