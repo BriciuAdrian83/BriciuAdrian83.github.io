@@ -298,59 +298,54 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#history-info-btn").addEventListener("click", () => {
         const modal = document.createElement('div');
         modal.style.cssText = `
-        position: fixed;
-        top:0; left:0; width:100%; height:100%;
+        position: fixed; top:0; left:0; width:100%; height:100%;
         background: rgba(0,0,0,0.5); z-index:1001;
         display:flex; align-items:center; justify-content:center;
     `;
 
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
-        background: white; padding: 25px; border-radius: 12px;
-        max-width: 450px; width: 90%; text-align: left;
+        background: white; padding: 22px 30px; border-radius: 12px;
+        max-width: 700px; width: 95%; text-align: left;
         box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        display: flex; flex-direction: column;
-        font-family: sans-serif;
+        display: flex; flex-direction: column; font-family: sans-serif;
     `;
 
         const title = document.createElement("h3");
-        title.style.cssText = "margin-bottom: 15px; font-size: 1.2rem; color: #333; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;";
+        title.style.cssText = "margin: 0 0 15px 0; font-size: 1.25rem; color: #333; border-bottom: 1px solid #dee2e6; padding-bottom: 10px;";
         title.innerHTML = '<i class="fa-solid fa-clock-rotate-left" style="margin-right:10px; color:#0dcaf0;"></i> Spaced Repetition Filter';
         modalContent.appendChild(title);
 
         const text = document.createElement("div");
         text.style.cssText = "font-size: 0.9rem; color: #444; line-height: 1.5;";
         text.innerHTML = `
-        The <b>Spaced</b> option filters your history to show only drills that are <b>due for review</b>. 
-        <br><br>
-        <table style="width:100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.85rem; background: #fdfdfd;">
-            <tr style="background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
-                <th style="padding:8px; text-align:left;">Mastery Level</th>
-                <th style="padding:8px; text-align:left;">Wait Time</th>
-            </tr>
-            <tr style="border-bottom: 1px solid #eee; color: #dc3545; font-weight: bold;">
-                <td style="padding:6px 8px;">Level 0</td><td style="padding:6px 8px;">Not Passed (Daily Practice)</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding:6px 8px;">Level 1</td><td style="padding:6px 8px;">1 Day</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding:6px 8px;">Level 2</td><td style="padding:6px 8px;">3 Days</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding:6px 8px;">Level 3</td><td style="padding:6px 8px;">1 Week</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding:6px 8px;">Level 4</td><td style="padding:6px 8px;">1 Month</td>
-            </tr>
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding:6px 8px;">Level 5+</td><td style="padding:6px 8px;">3 Months</td>
-            </tr>
-        </table>
-        When you master a drill (3 wins in a row with >50% accuracy), drills are marked with levels (from 1 to 5):
-        <br><br>
-        <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; font-size: 0.8rem;">
-            <b>Lvl 0 Status:</b> This is the starting level. Drills at Lvl 0 have not been passed yet and will appear as <b>-- Not passed --</b> in the list. Once mastered, they will show <b>Lvl (number)</b>.
+        <div style="margin-bottom: 15px;">The <b>Spaced</b> option filters history to show drills <b>due for review</b> based on mastery level:</div>
+        
+        <div style="display: flex; gap: 20px; margin-bottom: 15px; align-items: flex-start;">
+            <table style="flex: 1.2; border-collapse: collapse; font-size: 0.85rem; background: #fdfdfd; border: 1px solid #eee;">
+                <tr style="background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
+                    <th style="padding:6px 10px; text-align:left;">Mastery Level</th>
+                    <th style="padding:6px 10px; text-align:left;">Base Wait Time*</th>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;"><td style="padding:4px 10px;">Level 0</td><td style="padding:4px 10px; color:#dc3545; font-weight:bold;">Due Daily</td></tr>
+                <tr style="border-bottom: 1px solid #eee;"><td style="padding:4px 10px;">Level 1 | 2</td><td style="padding:4px 10px;">1 Day | 3 Days</td></tr>
+                <tr style="border-bottom: 1px solid #eee;"><td style="padding:4px 10px;">Level 3</td><td style="padding:4px 10px;">1 Week</td></tr>
+                <tr style="border-bottom: 1px solid #eee;"><td style="padding:4px 10px;">Level 4 | 5+</td><td style="padding:4px 10px;">1 Month | 3 Months</td></tr>
+            </table>
+
+            <div style="flex: 1; background: #e7faff; padding: 12px; border-radius: 8px; border: 1px solid #bdecf7; font-size: 0.82rem;">
+                <b style="color: #055160;">*Performance Bonuses:</b><br>
+                Based on <b>attempts</b> to win (3+ win streak):
+                <ul style="margin: 8px 0 0 18px; padding: 0;">
+                    <li><b>≤ 50:</b> <span style="color: #198754; font-weight:bold;">2x</span> wait (Fast)</li>
+                    <li><b>51-150:</b> <span style="color: #055160; font-weight:bold;">1.5x</span> wait (Avg)</li>
+                    <li><b>> 150:</b> Standard wait</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="background: #fff3cd; color: #856404; padding: 10px 15px; border-radius: 8px; border: 1px solid #ffeeba; font-size: 0.82rem;">
+            <b>Status Info:</b> <i>-- Not passed --</i> indicates Level 0. Level 1+ drills display the <b>tries</b> needed to achieve mastery. Success increases levels and schedules future reviews.
         </div>
     `;
         modalContent.appendChild(text);
@@ -358,9 +353,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const okButton = document.createElement("button");
         okButton.textContent = "Got it";
         okButton.style.cssText = `
-        margin-top: 20px; padding: 8px 24px; border:none; border-radius:6px;
+        margin-top: 15px; padding: 8px 30px; border:none; border-radius:6px;
         background:#0dcaf0; color:white; cursor:pointer; align-self: flex-end;
-        font-weight: bold;
+        font-weight: bold; transition: background 0.2s;
     `;
         okButton.onmouseover = () => okButton.style.backgroundColor = "#0baccc";
         okButton.onmouseout = () => okButton.style.backgroundColor = "#0dcaf0";
@@ -371,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         document.body.appendChild(modal);
     });
-
 });
 
 // --- Edit mode toggle ---
@@ -443,7 +437,7 @@ function updateDrillHistoryNextReviewOnSucceed(drillText, attempts) {
         historyQueue[historyIdx].succeededTimes += 1;
 
         // store the attempts o succed
-         historyQueue[historyIdx].attempts = attempts;
+        historyQueue[historyIdx].attempts = attempts;
 
         const futureTimestamp = calculateNextReview(historyQueue[historyIdx].succeededTimes, attempts);
         historyQueue[historyIdx].nextReviewAt = futureTimestamp;
@@ -470,7 +464,7 @@ function calculateNextReview(currentLevel, attempts) {
 
     // Apply Performance Multipliers based on less attempts
     if (attempts <= 50) {
-        waitTime *= 2.0; 
+        waitTime *= 2.0;
     } else if (attempts <= 150) {
         waitTime *= 1.5;
     }
