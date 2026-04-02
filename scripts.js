@@ -573,7 +573,7 @@ function refreshHistorySelect2(filterType) {
     // Append filtered items (reversed so newest is first)
     filteredQueue.reverse().forEach(drill => {
         const option = new Option(
-            `${drill.drillText} (${drill.wpmTarget} WPM)${parseInt(drill.succeededTimes, 10) > 0 ? ` [Lvl ${drill.succeededTimes}]` : ` -- Not passed --`}`,
+            `${drill.drillText} (${drill.wpmTarget} WPM)${parseInt(drill.succeededTimes, 10) > 0 ? ` [Lvl ${drill.succeededTimes} after ${drill.attempts ? drill.attempts : '?'} tries]` : ` -- Not passed --`}`,
             drill.drillText,
             false,
             false
