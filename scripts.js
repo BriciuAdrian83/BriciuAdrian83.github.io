@@ -431,7 +431,7 @@ function updateDrillHistoryWpmTarget(drillText, wpmTarget) {
     }
 }
 
-function updateDrillHistoryNextReviewOnSucceed(drillText) {
+function updateDrillHistoryNextReviewOnSucceed(drillText, attempts) {
     const drillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
     const drillHistory = drillHistoryRaw ? JSON.parse(drillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
     const historyQueue = drillHistory.historyQueue;
@@ -442,13 +442,16 @@ function updateDrillHistoryNextReviewOnSucceed(drillText) {
         // 1. Increment the success counter
         historyQueue[historyIdx].succeededTimes += 1;
 
-        const futureTimestamp = calculateNextReview(historyQueue[historyIdx].succeededTimes);
+        // store the attempts o succed
+         historyQueue[historyIdx].attempts = attempts;
+
+        const futureTimestamp = calculateNextReview(historyQueue[historyIdx].succeededTimes, attempts);
         historyQueue[historyIdx].nextReviewAt = futureTimestamp;
         localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
     }
 }
 
-function calculateNextReview(currentLevel) {
+function calculateNextReview(currentLevel, attempts) {
     const now = Date.now();
     const day = 86400000;
 
@@ -463,7 +466,16 @@ function calculateNextReview(currentLevel) {
 
     // Use the level to pick the interval (cap at the last index for 5+)
     const index = Math.min(currentLevel - 1, intervals.length - 1);
-    return now + intervals[index];
+    let waitTime = intervals[index];
+
+    // Apply Performance Multipliers based on less attempts
+    if (attempts <= 50) {
+        waitTime *= 2.0; 
+    } else if (attempts <= 150) {
+        waitTime *= 1.5;
+    }
+
+    return now + waitTime;
 }
 
 function findHistoryDrillIndex(historyQueue, historyQueueLength, drillText) {
@@ -1106,7 +1118,7 @@ function handleTypingInput(e) {
         const successCount = drillState.wpmHistory.filter(w => w > 0).length;
         const rate = successCount * 10;
         if (drillState.winStreak >= 3 && drillState.attempts >= 10 && rate >= 50) {
-            updateDrillHistoryNextReviewOnSucceed(drillState.drillText);
+            updateDrillHistoryNextReviewOnSucceed(drillState.drillText, drillState.attempts);
             setTimeout(() => showCongratulationsModal(
                 `🎉 ${drillState.winStreak} wins in a row and ${rate}% success rate on the last 10 attempts. Keep it up!`,
                 'OK'

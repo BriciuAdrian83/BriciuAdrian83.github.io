@@ -82,7 +82,7 @@ A word could be in both categorie, high score is a bad result, that is words wit
 # Super Simple Typing Drill (SSTD) - History System Documentation
 
 ## 1. Overview
-This document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system utilizes a **Level-based Spaced Repetition (SRS)** algorithm to optimize muscle memory by increasing review intervals as mastery is demonstrated.
+This document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system utilizes an **Adaptive Level-based Spaced Repetition (SRS)** algorithm. It optimizes muscle memory by increasing review intervals as mastery is demonstrated, while rewarding high-efficiency practice with performance-based bonuses.
 
 ## 2. Storage Key
 - **Key:** `a+3_sstd_words_stats`
@@ -94,34 +94,41 @@ This document defines the persistent data structure and logic for the Super Simp
 | `drillText` | String | The unique text sequence. Used as the primary key. |
 | `wpmTarget` | Number | The specific WPM goal set for this drill. |
 | `createdAt` | Number | Unix timestamp (ms) of when the drill was first created. |
-| `succeededTimes` | Number | **The Level.** Increments on mastery; resets to 0 on failure. |
+| `succeededTimes`| Number | **The Level.** Increments on mastery; resets to 0 on failure. |
+| `attempts` | Number | The number of tries taken in the session where mastery was achieved. |
 | `nextReviewAt` | Number \| null | The calculated Unix timestamp for the next review session. |
 
 ## 4. Operational Logic
 
-### A. Saving & Updating
-- **New Drills:** Initialized with `succeededTimes: 0` and `nextReviewAt: null`.
-- **Target Updates:** Changing WPM for an existing drill updates `wpmTarget` but preserves existing success counts and levels.
-
-### B. Mastery Criteria
+### A. Mastery Criteria
 A drill is considered **"Succeeded" (Mastered)** and eligible for a Level-Up when:
-1. The user achieves a **3-win streak**.
-2. The success rate is **≥ 50%** over the last 10 attempts.
+1. The user achieves a **3-win streak** in the current session.
+2. The user has performed at least **10 total attempts** in the current session.
+3. The success rate is **≥ 50%** over the last 10 attempts.
 
-### C. Spaced Repetition Progression (The Ladder)
-When a drill is mastered, the `nextReviewAt` interval expands exponentially based on the new `succeededTimes`.
+### B. Adaptive Spacing Progression (The Ladder)
+Upon mastery, the `nextReviewAt` interval is calculated by taking a **Base Interval** and applying a **Performance Multiplier** based on the number of attempts required to pass.
 
-| Level (After Success) | Interval | Milliseconds (Approx) |
+#### Tier 1: Base Intervals
+| Level (After Success) | Base Interval | Milliseconds (ms) |
 | :--- | :--- | :--- |
-| **Level 0** | Daily Practice | `null` (Always Due) |
 | **Level 1** | 1 Day | `86,400,000` |
 | **Level 2** | 3 Days | `259,200,000` |
 | **Level 3** | 1 Week | `604,800,000` |
 | **Level 4** | 1 Month (30d) | `2,592,000,000` |
 | **Level 5+** | 3 Months (90d) | `7,776,000,000` |
 
-### D. Failure Logic (The Reset)
-If a user fails to meet the target WPM during a session:
+#### Tier 2: Performance Multipliers
+| Session Attempts | Multiplier | Description |
+| :--- | :--- | :--- |
+| **1 - 50** | **2.0x** | **High Performance:** Mastery achieved rapidly. |
+| **51 - 150** | **1.5x** | **Average Performance:** Standard learning curve. |
+| **> 150** | **1.0x** | **Standard:** Mastery required significant repetition. |
+
+**Formula:** `NextReview = Now + (BaseInterval * Multiplier)`
+
+### C. Failure Logic (The Reset)
+If a user fails to meet the target WPM or manually resets during a session:
 - `succeededTimes` is reset to **0**.
 - `nextReviewAt` is set to **null**.
 - **Result:** The drill returns to the "Spaced" (Due) queue immediately for daily practice.
@@ -134,8 +141,9 @@ The Select2 history search uses these logic gates to filter the `historyQueue`:
 - **All:** Returns the entire `historyQueue` (sorted by newest first).
 
 ### Dropdown Display Logic
-- **Level 0:** Shown as `[drillText] ([WPM] WPM) -- not passed --`
-- **Level 1+:** Shown as `[drillText] ([WPM] WPM) [Lvl X]`
+- **Level 0 (Unpassed):** `[drillText] ([WPM] WPM) -- not passed --`
+- **Level 1+ (Mastered):** `[drillText] ([WPM] WPM) [Lvl X after Y tries]`
+- **Legacy Data:** If `attempts` is missing, the UI displays `[Lvl X after ? tries]`.
 
 ## Installation
 1. Clone the repository:
