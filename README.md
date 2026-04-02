@@ -78,6 +78,65 @@ In a modal 1 categories of top words will be shown:
 - top 4 words with worst typing speed
 A word could be in both categorie, high score is a bad result, that is words with the highest scores will compose the top 4.
 
+
+# Super Simple Typing Drill (SSTD) - History System Documentation
+
+## 1. Overview
+This document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system utilizes a **Level-based Spaced Repetition (SRS)** algorithm to optimize muscle memory by increasing review intervals as mastery is demonstrated.
+
+## 2. Storage Key
+- **Key:** `a+3_sstd_words_stats`
+- **Format:** JSON Object containing an array named `historyQueue`.
+
+## 3. Data Schema (The Drill Object)
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `drillText` | String | The unique text sequence. Used as the primary key. |
+| `wpmTarget` | Number | The specific WPM goal set for this drill. |
+| `createdAt` | Number | Unix timestamp (ms) of when the drill was first created. |
+| `succeededTimes` | Number | **The Level.** Increments on mastery; resets to 0 on failure. |
+| `nextReviewAt` | Number \| null | The calculated Unix timestamp for the next review session. |
+
+## 4. Operational Logic
+
+### A. Saving & Updating
+- **New Drills:** Initialized with `succeededTimes: 0` and `nextReviewAt: null`.
+- **Target Updates:** Changing WPM for an existing drill updates `wpmTarget` but preserves existing success counts and levels.
+
+### B. Mastery Criteria
+A drill is considered **"Succeeded" (Mastered)** and eligible for a Level-Up when:
+1. The user achieves a **3-win streak**.
+2. The success rate is **≥ 50%** over the last 10 attempts.
+
+### C. Spaced Repetition Progression (The Ladder)
+When a drill is mastered, the `nextReviewAt` interval expands exponentially based on the new `succeededTimes`.
+
+| Level (After Success) | Interval | Milliseconds (Approx) |
+| :--- | :--- | :--- |
+| **Level 0** | Daily Practice | `null` (Always Due) |
+| **Level 1** | 1 Day | `86,400,000` |
+| **Level 2** | 3 Days | `259,200,000` |
+| **Level 3** | 1 Week | `604,800,000` |
+| **Level 4** | 1 Month (30d) | `2,592,000,000` |
+| **Level 5+** | 3 Months (90d) | `7,776,000,000` |
+
+### D. Failure Logic (The Reset)
+If a user fails to meet the target WPM during a session:
+- `succeededTimes` is reset to **0**.
+- `nextReviewAt` is set to **null**.
+- **Result:** The drill returns to the "Spaced" (Due) queue immediately for daily practice.
+
+## 5. UI Implementation
+The Select2 history search uses these logic gates to filter the `historyQueue`:
+
+- **Today:** `new Date(item.createdAt).toDateString() === new Date().toDateString()`
+- **Spaced (Due):** `item.nextReviewAt === null || item.nextReviewAt <= Date.now()`
+- **All:** Returns the entire `historyQueue` (sorted by newest first).
+
+### Dropdown Display Logic
+- **Level 0:** Shown as `[drillText] ([WPM] WPM) -- not passed --`
+- **Level 1+:** Shown as `[drillText] ([WPM] WPM) [Lvl X]`
+
 ## Installation
 1. Clone the repository:
 ```bash
@@ -93,8 +152,7 @@ git clone https://github.com/yourusername/small-sequence-typing-drill.git
 4. Press **Enter** to restart at any time (or press try again button).  
 5. Observe your **WPM and streaks** in real time.  
 
-## Change / History Drill Improvements
-1. OverviewThis document defines the persistent data structure and logic for the Super Simple Typing Drill (SSTD) history system. This system utilizes a Level-based Spaced Repetition (SRS) algorithm to optimize muscle memory by increasing review intervals as mastery is demonstrated.2. Storage KeyKey: a+3_sstd_words_statsFormat: JSON Object containing an array named historyQueue.3. Data Schema (The Drill Object)PropertyTypeDescriptiondrillTextStringUnique identifier for the drill.wpmTargetNumberThe WPM goal for this sequence.createdAtNumberUnix timestamp (ms) of creation.succeededTimesNumberThe Level. Increments on mastery; resets to 0 on failure.nextReviewAtNumber | nullUnix timestamp for the next scheduled session.4. Operational LogicA. Saving & UpdatingNew Drills: Initialized with succeededTimes: 0 and nextReviewAt: null.Target Updates: Changing WPM for an existing drill updates wpmTarget but preserves history/level.B. Mastery CriteriaA drill is considered "Succeeded" (Mastered) when:The user achieves a 3-win streak.The success rate is ≥ 50% over the last 10 attempts.C. Spaced Repetition Progression (The Ladder)Instead of a flat addition, the nextReviewAt interval expands exponentially based on the succeededTimes (Level).Level (After Success)IntervalCalculation (ms)Level 14 HoursDate.now() + 14,400,000Level 21 DayDate.now() + 86,400,000Level 33 DaysDate.now() + 259,200,000Level 41 WeekDate.now() + 604,800,000Level 5+2 WeeksDate.now() + 1,209,600,000D. Failure Logic (The Reset)If a user fails to meet the target WPM during a session:succeededTimes is reset to 0.nextReviewAt is set to null (making it appear in the "Today" and "All" queues immediately).5. UI ImplementationThe Select2 history search uses these logic gates:Today: new Date(item.createdAt).toDateString() === new Date().toDateString()Spaced (Due): item.nextReviewAt !== null && item.nextReviewAt <= Date.now()All: Returns the entire historyQueue (sorted by newest first).
+
 
 ## License
 This project is open-source and free to use.  
