@@ -369,80 +369,82 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(modal);
     });
 
-    document.querySelector("#delete-drill-btn").addEventListener("click", () => {
-        const drillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
-        const drillHistory = drillHistoryRaw ? JSON.parse(drillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
+  document.querySelector("#delete-drill-btn").addEventListener("click", () => {
+    const drillHistoryRaw = localStorage.getItem(LOCAL_STORAGE_WORDS_KEY);
+    const drillHistory = drillHistoryRaw ? JSON.parse(drillHistoryRaw) : { accuracyQueue: [], speedQueue: [], historyQueue: [] };
 
-        // Check if we have at least 2 drills to allow deletion
-        const canDelete = drillHistory.historyQueue && drillHistory.historyQueue.length >= 2;
+    const canDelete = drillHistory.historyQueue && drillHistory.historyQueue.length >= 2;
 
-        const modal = document.createElement('div');
-        modal.style.cssText = `
+    const modal = document.createElement('div');
+    modal.style.cssText = `
         position: fixed; top:0; left:0; width:100%; height:100%;
         background: rgba(0,0,0,0.5); z-index:2000;
         display:flex; align-items:center; justify-content:center;
     `;
 
-        const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
         background: white; padding: 25px; border-radius: 10px;
         max-width: 400px; width: 90%; text-align: center;
         box-shadow: 0 10px 25px rgba(0,0,0,0.3); font-family: sans-serif;
     `;
 
-        if (!canDelete) {
-            // --- WARNING VIEW: Cannot Delete ---
-            modalContent.innerHTML = `
+    if (!canDelete) {
+        modalContent.innerHTML = `
             <h4 style="color: #d9534f; margin-top: 0;">Cannot Delete</h4>
             <p style="font-size: 0.9rem; color: #555; line-height: 1.5;">
                 You can't delete this drill. You have to have more than 2 drills in history to be able to delete a drill.
             </p>
-            <button id="close-modal-btn" style="margin-top: 15px; padding: 8px 25px; border:none; border-radius:6px; background:#6c757d; color:white; cursor:pointer; font-weight:bold;">OK</button>
+            <button id="close-modal-btn" style="margin-top: 15px; padding: 8px 25px; border:none; border-radius:6px; background:#6c757d; color:white; cursor:pointer; font-weight:bold; transition: background 0.2s;">OK</button>
         `;
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-            document.getElementById('close-modal-btn').onclick = () => modal.remove();
-        } else {
-            // --- CONFIRMATION VIEW: Are you sure? ---
-            modalContent.innerHTML = `
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        const okBtn = document.getElementById('close-modal-btn');
+        okBtn.onmouseover = () => okBtn.style.backgroundColor = "#5a6268";
+        okBtn.onmouseout = () => okBtn.style.backgroundColor = "#6c757d";
+        okBtn.onclick = () => modal.remove();
+    } else {
+        modalContent.innerHTML = `
             <h4 style="margin-top: 0;">Delete Drill?</h4>
             <p style="font-size: 0.9rem; color: #555; line-height: 1.5;">
                 Are you sure you want to delete "<b>${drillState.drillText}</b>"? This action cannot be undone.
             </p>
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <button id="cancel-delete-btn" style="padding: 8px 20px; border:none; border-radius:6px; background:#6c757d; color:white; cursor:pointer; font-weight:bold;">Cancel</button>
-                <button id="confirm-delete-btn" style="padding: 8px 20px; border:none; border-radius:6px; background:#dc3545; color:white; cursor:pointer; font-weight:bold;">Delete</button>
+                <button id="cancel-delete-btn" style="padding: 8px 20px; border:none; border-radius:6px; background:#6c757d; color:white; cursor:pointer; font-weight:bold; transition: background 0.2s;">Cancel</button>
+                <button id="confirm-delete-btn" style="padding: 8px 20px; border:none; border-radius:6px; background:#dc3545; color:white; cursor:pointer; font-weight:bold; transition: background 0.2s;">Delete</button>
             </div>
         `;
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
 
-            // Cancel Button logic
-            document.getElementById('cancel-delete-btn').onclick = () => modal.remove();
+        const cancelBtn = document.getElementById('cancel-delete-btn');
+        const confirmBtn = document.getElementById('confirm-delete-btn');
 
-            // Delete Button logic
-            document.getElementById('confirm-delete-btn').onclick = () => {
-                // 1. Find and Remove from historyQueue
-                const index = drillHistory.historyQueue.findIndex(d => d.drillText === drillState.drillText);
-                if (index !== -1) {
-                    drillHistory.historyQueue.splice(index, 1);
-                    localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
+        // Cancel hover
+        cancelBtn.onmouseover = () => cancelBtn.style.backgroundColor = "#5a6268";
+        cancelBtn.onmouseout = () => cancelBtn.style.backgroundColor = "#6c757d";
+        cancelBtn.onclick = () => modal.remove();
 
-                    // 2. Load the next available drill so the UI doesn't break
-                    const nextDrill = drillHistory.historyQueue[drillHistory.historyQueue.length - 1];
-                    drillState = buildFreshState(nextDrill.drillText, nextDrill.wpmTarget);
-                    saveToStorage(drillState);
+        // Delete hover
+        confirmBtn.onmouseover = () => confirmBtn.style.backgroundColor = "#c82333";
+        confirmBtn.onmouseout = () => confirmBtn.style.backgroundColor = "#dc3545";
+        confirmBtn.onclick = () => {
+            const index = drillHistory.historyQueue.findIndex(d => d.drillText === drillState.drillText);
+            if (index !== -1) {
+                drillHistory.historyQueue.splice(index, 1);
+                localStorage.setItem(LOCAL_STORAGE_WORDS_KEY, JSON.stringify(drillHistory));
+                const nextDrill = drillHistory.historyQueue[drillHistory.historyQueue.length - 1];
+                drillState = buildFreshState(nextDrill.drillText, nextDrill.wpmTarget);
+                saveToStorage(drillState);
+                location.reload();
+            }
+            modal.remove();
+        };
+    }
 
-                    // 3. Refresh UI and close modal
-                    location.reload(); // Simplest way to sync all UI elements/queues after a deletion
-                }
-                modal.remove();
-            };
-        }
-
-        // Close on backdrop click
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-    });
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+});
 
 });
 
